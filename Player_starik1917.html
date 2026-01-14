@@ -21,6 +21,10 @@
   <link rel="stylesheet" href="assets/mobirise/css/mbr-additional.css" type="text/css">
 
   <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
     @font-face {
         font-family: 'Minecraft';
         src: local('Minecraft'), local('Minecraftia'),
@@ -33,101 +37,152 @@
         margin: 0;
         font-family: 'Minecraft', monospace;
         color: #eaeaea;
-
-        /* PARALLAX BACKGROUND */
         background:
             linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
             url("quanto.jpg") center / cover no-repeat fixed;
     }
 
-    /* HEADER */
-    .header{
-        text-align:center;
-        padding:15px 10px 5px;
-        font-size:28px;
-        text-shadow:2px 2px 0 #000;
+    .header {
+        text-align: center;
+        padding: 15px 10px 5px;
+        font-size: 28px;
+        text-shadow: 2px 2px 0 #000;
     }
 
-    /* LAYOUT */
-    .container{
-        max-width:1200px;
-        margin:auto;
-        padding:20px;
-        display:flex;
-        gap:20px;
-        flex-wrap:wrap;
+    .container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
     }
 
-    /* RIGHT CARD */
-    .card{
-        width:320px;
-        background:#1b1b1b;
-        border:4px solid #3a3a3a;
-        box-shadow:0 0 0 4px #000 inset;
-        padding:15px;
+    .card {
+        width: 320px;
+        background: #1b1b1b;
+        border: 4px solid #3a3a3a;
+        box-shadow: 0 0 0 4px #000 inset;
+        padding: 15px;
     }
 
-    /* LEFT CONTENT */
-    .content{
-        flex:1;
-        min-width:300px;
+    .content {
+        flex: 1;
+        min-width: 300px;
     }
 
-    /* SKIN */
-    .skin-box{
-        text-align:center;
+    .skin-box {
+        text-align: center;
+        position: relative;
+        height: 160px;
     }
 
-    .skin-switch{
-        margin-bottom:6px;
+    .skin-switch {
+        margin-bottom: 6px;
     }
 
-    .skin-switch button{
-        padding:3px 8px;
-        font-size:12px;
-        background:#555;
-        border:2px solid #222;
-        color:white;
-        cursor:pointer;
+    .skin-switch button {
+        padding: 3px 8px;
+        font-size: 12px;
+        background: #555;
+        border: 2px solid #222;
+        color: white;
+        cursor: pointer;
+        margin: 0 2px;
     }
-    .skin-switch button:hover{ filter:brightness(1.2); }
+    .skin-switch button:hover {
+        filter: brightness(1.2);
+    }
+    .skin-switch button.active {
+        background: #777;
+    }
 
-    .skin-box img{
-        width:140px;
+    .skin-images-container {
+        position: relative;
+        width: 140px;
+        height: 140px;
+        margin: 0 auto;
+    }
+
+    .skin-images-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 140px;
         image-rendering: pixelated;
-        border:3px solid #555;
-        background:#111;
+        border: 3px solid #555;
+        background: #111;
+        opacity: 0;
+        transition: opacity 0.4s ease-in-out;
     }
 
-    /* INFO */
-    .info p{
-        margin:6px 0;
+    .skin-images-container img.active {
+        opacity: 1;
     }
 
-    /* BLOCKS */
-    .block{
-        margin-bottom:12px;
-        border:3px solid #444;
-        background:#1a1a1a;
+    .info p {
+        margin: 6px 0;
     }
-    .block h3{
-        margin:0;
-        padding:10px;
-        cursor:pointer;
-        background:#2a2a2a;
-    }
-    .block h3:hover{ background:#333; }
-    .block .inside{
-        display:none;
-        padding:10px;
-        line-height:1.5;
-    }
-    .block.open .inside{ display:block; }
 
-    /* MOBILE */
-    @media(max-width:800px){
-        .container{ flex-direction:column; }
-        .card{ width:100%; }
+    .block {
+        margin-bottom: 12px;
+        border: 3px solid #444;
+        background: #1a1a1a;
+        overflow: hidden;
+    }
+    .block h3 {
+        margin: 0;
+        padding: 10px;
+        cursor: pointer;
+        background: #2a2a2a;
+        transition: background 0.2s;
+    }
+    .block h3:hover {
+        background: #333;
+    }
+
+    .block .inside {
+        padding: 0 10px;
+        line-height: 1.5;
+        max-height: 0;
+        opacity: 0;
+        transition: max-height 0.35s ease, opacity 0.35s ease, padding 0.35s ease;
+    }
+
+    .block.open .inside {
+        padding: 10px 10px;
+        opacity: 1;
+        max-height: 600px;
+    }
+
+    @media(max-width:800px) {
+        .container { flex-direction: column; }
+        .card { width: 100%; }
+    }
+
+    .navbar {
+        background-color: #2a2a2a !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .navbar-brand,
+    .navbar-nav .nav-link,
+    .dropdown-item {
+        color: #eaeaea !important;
+    }
+
+    .navbar-nav .nav-link:hover,
+    .dropdown-item:hover {
+        color: #fff !important;
+        background-color: #333 !important;
+    }
+
+    .navbar-toggler {
+        border-color: #555;
+    }
+
+    .hamburger span {
+        background: #eaeaea;
     }
   </style>
 </head>
@@ -140,10 +195,12 @@
             <div class="navbar-brand">
                 <span class="navbar-logo">
                     <a href="index.html">
-                        <img src="assets/images/-121x121.png" alt="SwordLand" style="height: 3.8rem;">
+                        <img src="assets/images/-121x121.png" alt="SwordLand" style="height: 3.8rem; filter: invert(1) saturate(0) brightness(150%);">
                     </a>
                 </span>
-                <span class="navbar-caption-wrap"><a class="navbar-caption text-black text-primary display-7" href="index.html">SwordLand</a></span>
+                <span class="navbar-caption-wrap">
+                    <a class="navbar-caption display-7" href="index.html" style="color: #eaeaea;">SwordLand</a>
+                </span>
             </div>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <div class="hamburger">
@@ -155,12 +212,16 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true">
-                    <li class="nav-item"><a class="nav-link link text-black text-primary display-4" href="players.html" aria-expanded="true">Игроки</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link link display-4" href="players.html">Игроки</a>
+                    </li>
                     <li class="nav-item dropdown">
-                        <a class="nav-link link text-black dropdown-toggle display-4" href="#" data-toggle="dropdown-submenu" aria-expanded="false">Сезоны</a>
+                        <a class="nav-link link dropdown-toggle display-4" href="#" data-toggle="dropdown-submenu">
+                            Сезоны
+                        </a>
                         <div class="dropdown-menu">
-                            <a class="text-black dropdown-item text-primary display-4" href="SL1.html">SwordLand 1</a>
-                            <a class="text-black dropdown-item text-primary display-4" href="SL2.html" aria-expanded="true">SwordLand 2</a>
+                            <a class="dropdown-item display-4" href="SL1.html">SwordLand 1</a>
+                            <a class="dropdown-item display-4" href="SL2.html">SwordLand 2</a>
                         </div>
                     </li>
                 </ul>
@@ -175,12 +236,8 @@
 
     <div class="card">
       <div class="skin-box">
-        <div class="skin-switch">
-          <button onclick="setSkin(1)">SL1</button>
-          <button onclick="setSkin(2)">SL2</button>
-          <button onclick="setSkin(3)">SL3</button>
-        </div>
-        <img id="skin" src="/assets/images/skin1_starik1917.png" alt="skin">
+        <div class="skin-switch" id="skinButtons"></div>
+        <div class="skin-images-container" id="skinImagesContainer"></div>
       </div>
 
       <hr>
@@ -208,7 +265,7 @@
       <div class="block">
         <h3>▶ Описание персонажа</h3>
         <div class="inside">
-          Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрыва......
+          Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.
         </div>
       </div>
 
@@ -255,20 +312,58 @@
   <script src="assets/theme/js/script.js"></script>
 
   <script>
-    function setSkin(n){
-        const skins = {
-            1: "/assets/images/skin1_starik1917.png",
-            2: "/assets/images/skin2_starik1917.png",
-            3: "/assets/images/skin3_starik1917.png"
-        };
-        document.getElementById("skin").src = skins[n];
+    const skins = [
+      { label: "SL1", src: "/assets/images/skin1_starik1917.png" },
+      { label: "SL2", src: "/assets/images/skin2_starik1917.png" },
+      { label: "SL3", src: "/assets/images/skin3_starik1917.png" }
+    ];
+
+    let currentSkinIndex = 0;
+
+    function initSkins() {
+      const buttonsContainer = document.getElementById("skinButtons");
+      const imagesContainer = document.getElementById("skinImagesContainer");
+
+      buttonsContainer.innerHTML = "";
+      imagesContainer.innerHTML = "";
+
+      skins.forEach((skin, index) => {
+        const button = document.createElement("button");
+        button.textContent = skin.label;
+        button.onclick = () => switchSkin(index);
+        if (index === 0) button.classList.add("active");
+        buttonsContainer.appendChild(button);
+
+        const img = document.createElement("img");
+        img.src = skin.src;
+        img.alt = "skin";
+        if (index === 0) img.classList.add("active");
+        imagesContainer.appendChild(img);
+      });
     }
 
-    document.querySelectorAll(".block h3").forEach(h=>{
-        h.addEventListener("click", ()=>{
-            h.parentElement.classList.toggle("open");
-        });
+    function switchSkin(index) {
+      if (index === currentSkinIndex) return;
+
+      const images = document.querySelectorAll("#skinImagesContainer img");
+      const buttons = document.querySelectorAll("#skinButtons button");
+
+      images[currentSkinIndex].classList.remove("active");
+      buttons[currentSkinIndex].classList.remove("active");
+
+      currentSkinIndex = index;
+
+      images[currentSkinIndex].classList.add("active");
+      buttons[currentSkinIndex].classList.add("active");
+    }
+
+    document.querySelectorAll(".block h3").forEach(h => {
+      h.addEventListener("click", () => {
+        h.parentElement.classList.toggle("open");
+      });
     });
+
+    initSkins();
   </script>
 <script src="assets/smoothscroll/smooth-scroll.js"></script>
 </body>
