@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+  <meta name="description" content="SwordLand - официальный сайт сервера SwordLand, включающий вики и много чего еще.">
+  <meta name="keywords" content="SwordLand, Sword Land, SL wiki, minecraft server, Minecraft wiki, bepismine, Starik1917, Kotez_, лор майнкрафт, вики сервер, сезоны, Сворд ленд">
+  <meta name="author" content="SwordLand Community">
+  <meta name="robots" content="index, follow">
   <link rel="shortcut icon" href="assets/images/-121x121.png" type="image/x-icon">
-  <meta name="description" content="Профиль игрока Starik1917 на сервере Sword Land">
-
   <title>Starik1917 — Sword Land Wiki</title>
 
-  <link rel="stylesheet" href="assets/web/assets/mobirise-icons2/mobirise2.css">
-  <link rel="stylesheet" href="assets/web/assets/mobirise-icons/mobirise-icons.css">
   <link rel="stylesheet" href="assets/tether/tether.min.css">
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-grid.min.css">
@@ -19,200 +19,257 @@
   <link rel="stylesheet" href="assets/socicon/css/styles.css">
   <link rel="stylesheet" href="assets/theme/css/style.css">
   <link rel="stylesheet" href="assets/mobirise/css/mbr-additional.css" type="text/css">
+
+  <style>
+    @font-face {
+        font-family: 'Minecraft';
+        src: local('Minecraft'), local('Minecraftia'),
+             url('https://fonts.cdnfonts.com/s/18238/Minecraftia-Regular.woff') format('woff');
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: 'Minecraft', monospace;
+        color: #eaeaea;
+
+        /* PARALLAX BACKGROUND */
+        background:
+            linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+            url("quanto.jpg") center / cover no-repeat fixed;
+    }
+
+    /* HEADER */
+    .header{
+        text-align:center;
+        padding:15px 10px 5px;
+        font-size:28px;
+        text-shadow:2px 2px 0 #000;
+    }
+
+    /* LAYOUT */
+    .container{
+        max-width:1200px;
+        margin:auto;
+        padding:20px;
+        display:flex;
+        gap:20px;
+        flex-wrap:wrap;
+    }
+
+    /* RIGHT CARD */
+    .card{
+        width:320px;
+        background:#1b1b1b;
+        border:4px solid #3a3a3a;
+        box-shadow:0 0 0 4px #000 inset;
+        padding:15px;
+    }
+
+    /* LEFT CONTENT */
+    .content{
+        flex:1;
+        min-width:300px;
+    }
+
+    /* SKIN */
+    .skin-box{
+        text-align:center;
+    }
+
+    .skin-switch{
+        margin-bottom:6px;
+    }
+
+    .skin-switch button{
+        padding:3px 8px;
+        font-size:12px;
+        background:#555;
+        border:2px solid #222;
+        color:white;
+        cursor:pointer;
+    }
+    .skin-switch button:hover{ filter:brightness(1.2); }
+
+    .skin-box img{
+        width:140px;
+        image-rendering: pixelated;
+        border:3px solid #555;
+        background:#111;
+    }
+
+    /* INFO */
+    .info p{
+        margin:6px 0;
+    }
+
+    /* BLOCKS */
+    .block{
+        margin-bottom:12px;
+        border:3px solid #444;
+        background:#1a1a1a;
+    }
+    .block h3{
+        margin:0;
+        padding:10px;
+        cursor:pointer;
+        background:#2a2a2a;
+    }
+    .block h3:hover{ background:#333; }
+    .block .inside{
+        display:none;
+        padding:10px;
+        line-height:1.5;
+    }
+    .block.open .inside{ display:block; }
+
+    /* MOBILE */
+    @media(max-width:800px){
+        .container{ flex-direction:column; }
+        .card{ width:100%; }
+    }
+  </style>
 </head>
 
 <body>
 
-<section class="menu cid-s48OLK6784" once="menu" id="menu1-w">
-  <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
-    <div class="container-fluid">
-      <div class="navbar-brand">
-        <span class="navbar-logo">
-          <a href="index.html">
-            <img src="assets/images/-121x121.png" alt="SwordLand" style="height: 3.8rem;">
-          </a>
-        </span>
-        <span class="navbar-caption-wrap">
-          <a class="navbar-caption text-black text-primary display-7" href="index.html">SwordLand</a>
-        </span>
-      </div>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-        aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-        <div class="hamburger">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">        <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true">
-          <li class="nav-item"><a class="nav-link link text-black text-primary display-4" href="players.html">Игроки</a></li>
-          <li class="nav-item dropdown">
-            <a class="nav-link link text-black dropdown-toggle display-4" href="#" data-toggle="dropdown-submenu">
-              Сезоны
-            </a>
-            <div class="dropdown-menu">
-              <a class="text-black dropdown-item text-primary display-4" href="SL1.html">SwordLand 1</a>
-              <a class="text-black dropdown-item text-primary display-4" href="SL2.html">SwordLand 2</a>
+  <section class="menu cid-s48OLK6784" once="menu" id="menu1-h">
+    <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
+        <div class="container-fluid">
+            <div class="navbar-brand">
+                <span class="navbar-logo">
+                    <a href="index.html">
+                        <img src="assets/images/-121x121.png" alt="SwordLand" style="height: 3.8rem;">
+                    </a>
+                </span>
+                <span class="navbar-caption-wrap"><a class="navbar-caption text-black text-primary display-7" href="index.html">SwordLand</a></span>
             </div>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-</section>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true">
+                    <li class="nav-item"><a class="nav-link link text-black text-primary display-4" href="players.html" aria-expanded="true">Игроки</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link link text-black dropdown-toggle display-4" href="#" data-toggle="dropdown-submenu" aria-expanded="false">Сезоны</a>
+                        <div class="dropdown-menu">
+                            <a class="text-black dropdown-item text-primary display-4" href="SL1.html">SwordLand 1</a>
+                            <a class="text-black dropdown-item text-primary display-4" href="SL2.html" aria-expanded="true">SwordLand 2</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+  </section>
 
-<section class="content17 cid-starik-profile" id="content17-starik">
+  <div class="header">Starik1917</div>
+
   <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-12 col-md-12">
-        <div class="mbr-section-head align-center">
-          <h3 class="mbr-section-title mb-0 mbr-fonts-style display-2"><strong>Starik1917</strong></h3>
+
+    <div class="card">
+      <div class="skin-box">
+        <div class="skin-switch">
+          <button onclick="setSkin(1)">SL1</button>
+          <button onclick="setSkin(2)">SL2</button>
+          <button onclick="setSkin(3)">SL3</button>
         </div>
+        <img id="skin" src="/assets/images/skin1_starik1917.png" alt="skin">
+      </div>
 
-        <div class="card p-4 mb-4" style="background:#f5f5f5; border:1px solid #ddd;">
-          <div class="text-center mb-3">
-            <div class="mb-2">
-              <button class="btn btn-sm btn-secondary mr-1" onclick="setSkin(1)">SL1</button>
-              <button class="btn btn-sm btn-secondary" onclick="setSkin(2)">SL2</button>
-            </div>
-            <img id="skin" src="skin1starik1917.png" alt="Скин Starik1917"
-                 class="img-fluid" style="max-width:140px; image-rendering: pixelated; background:#eee; padding:4px; border:2px solid #ccc;">
-          </div>
-          <hr>
-          <div class="info text-left">
-            <p><strong>Ник:</strong> Starik1917</p>
-            <p><strong>Сезоны:</strong> 1, 2</p>
-            <p><strong>Коалиции:</strong><br>
-                • ЖДК (ранее)<br>
-                • ЖКВС (ранее)<br>
-                • Белая Тёмка (частично)
-            </p>
-            <p><strong>Статус:</strong> Активен</p>
-          </div>
-        </div>
-<div id="bootstrap-toggle" class="toggle-panel accordionStyles tab-content">
+      <hr>
 
-          <div class="card mb-3">
-            <div class="card-header" role="tab">
-              <a role="button" class="collapsed panel-title text-black" data-toggle="collapse" href="#desc">
-                <span class="sign mbr-iconfont mbri-arrow-down inactive"></span>
-                <h6 class="mbr-fonts-style display-7">Описание персонажа</h6>
-              </a>
-            </div>
-            <div id="desc" class="panel-collapse noScroll collapse" role="tabpanel">
-              <div class="panel-body p-3">
-                <p class="mbr-fonts-style panel-text display-7">
-                  Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.
-                </p>
-              </div>
-            </div>
-          </div>
+      <div class="info">
+        <p><b>Ник:</b> Starik1917</p>
+        <p><b>Сезоны:</b> 1, 2</p>
+        <p><b>Коалиции:</b><br>
+        • ЖДК(ранее)<br>
+        • ЖКВС(ранее)<br>
+        • Белая Тёмка(частично)</p>
+        <p><b>Статус:</b> Активен</p>
+      </div>
 
-          <div class="card mb-3">
-            <div class="card-header" role="tab">
-              <a role="button" class="collapsed panel-title text-black" data-toggle="collapse" href="#history">
-                <span class="sign mbr-iconfont mbri-arrow-down inactive"></span>
-                <h6 class="mbr-fonts-style display-7">История попадания на сервер</h6>
-              </a>
-            </div>
-            <div id="history" class="panel-collapse noScroll collapse" role="tabpanel">
-              <div class="panel-body p-3">
-                <p class="mbr-fonts-style panel-text display-7">
-                  Создатель проекта Sword Land. Присутствует с начала существования сервера.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-3">
-            <div class="card-header" role="tab">
-              <a role="button" class="collapsed panel-title text-black" data-toggle="collapse" href="#lore">
-                <span class="sign mbr-iconfont mbri-arrow-down inactive"></span>
-                <h6 class="mbr-fonts-style display-7">Лор игрока</h6>
-              </a>
-            </div>
-            <div id="lore" class="panel-collapse noScroll collapse" role="tabpanel">
-              <div class="panel-body p-3">
-                <p class="mbr-fonts-style panel-text display-7">
-                  Известен исследованиями аномалий и участием в запуске радио совместно с двумя другими игроками.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div class="card mb-3">
-            <div class="card-header" role="tab">
-              <a role="button" class="collapsed panel-title text-black" data-toggle="collapse" href="#buildings">
-                <span class="sign mbr-iconfont mbri-arrow-down inactive"></span>
-                <h6 class="mbr-fonts-style display-7">Постройки</h6>
-              </a>
-            </div>
-            <div id="buildings" class="panel-collapse noScroll collapse" role="tabpanel">
-              <div class="panel-body p-3">
-                <p class="mbr-fonts-style panel-text display-7">
-                  • Домик лесника в тайге<br>
-                  • Магазин «Моховичок» на спавне<br>
-                  • Аметистовый дом возле базы hirobrin_13 в вишнёвом лесу<br>
-                  • Ферма опыта «Батарейка» на базе «Белой Тёмки»
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-3">
-            <div class="card-header" role="tab">
-              <a role="button" class="collapsed panel-title text-black" data-toggle="collapse" href="#extra">
-                <span class="sign mbr-iconfont mbri-arrow-down inactive"></span>
-                <h6 class="mbr-fonts-style display-7">Дополнительно</h6>
-              </a>
-            </div>
-            <div id="extra" class="panel-collapse noScroll collapse" role="tabpanel">
-              <div class="panel-body p-3">
-                <p class="mbr-fonts-style panel-text display-7">
-                  Сюжетных предметов не имеет.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card mb-3">
-            <div class="card-header" role="tab">
-              <a role="button" class="collapsed panel-title text-black" data-toggle="collapse" href="#personal">
-                <span class="sign mbr-iconfont mbri-arrow-down inactive"></span>
-                <h6 class="mbr-fonts-style display-7">Личная информация</h6>
-              </a>
-            </div>
-            <div id="personal" class="panel-collapse noScroll collapse" role="tabpanel">
-              <div class="panel-body p-3">
-                <p class="mbr-fonts-style panel-text display-7">
-                  Имя: по желанию игрока<br>
-                  Дата рождения: по желанию игрока
-                </p>
-              </div>            </div>
-          </div>
-
+      <div class="block">
+        <h3>▶ Личная информация</h3>
+        <div class="inside">
+          Имя: по желанию игрока<br>
+          Дата рождения: по желанию игрока
         </div>
       </div>
     </div>
+
+    <div class="content">
+      <div class="block">
+        <h3>▶ Описание персонажа</h3>
+        <div class="inside">
+          Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрыва......
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>▶ История попадания на сервер</h3>
+        <div class="inside">
+          Создатель проекта Sword Land. Присутствует с начала существования сервера.
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>▶ Лор игрока</h3>
+        <div class="inside">
+          Известен исследованиями аномалий и участием в запуске радио совместно с двумя другими игроками.
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>▶ Постройки</h3>
+        <div class="inside">
+          • Домик лесника в тайге<br>
+          • Магазин «Моховичок» на спавне<br>
+          • Аметистовый дом возле базы hirobrin_13 в вишнёвом лесу<br>
+          • Ферма опыта «Батарейка» на базе «Белой Тёмки»
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>▶ Дополнительно</h3>
+        <div class="inside">
+          Сюжетных предметов не имеет.
+        </div>
+      </div>
+    </div>
+
   </div>
-</section>
 
-<!-- Scripts -->
-<script src="assets/web/assets/jquery/jquery.min.js"></script>
-<script src="assets/popper/popper.min.js"></script>
-<script src="assets/tether/tether.min.js"></script>
-<script src="assets/bootstrap/js/bootstrap.min.js"></script>
-<script src="assets/dropdown/js/nav-dropdown.js"></script>
-<script src="assets/touch-swipe/jquery.touch-swipe.min.js"></script>
-<script src="assets/parallax/jarallax.min.js"></script>
-<script src="assets/theme/js/script.js"></script>
+  <script src="assets/web/assets/jquery/jquery.min.js"></script>
+  <script src="assets/popper/popper.min.js"></script>
+  <script src="assets/tether/tether.min.js"></script>
+  <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="assets/dropdown/js/nav-dropdown.js"></script>
+  <script src="assets/dropdown/js/navbar-dropdown.js"></script>
+  <script src="assets/theme/js/script.js"></script>
 
-<script>
-function setSkin(n) {
-  const img = document.getElementById("skin");
-  img.src = n === 1 ? "skin1.png" : "skin2.png";
-}
-</script>
+  <script>
+    function setSkin(n){
+        const skins = {
+            1: "/assets/images/skin1_starik1917.png",
+            2: "/assets/images/skin2_starik1917.png",
+            3: "/assets/images/skin3_starik1917.png"
+        };
+        document.getElementById("skin").src = skins[n];
+    }
+
+    document.querySelectorAll(".block h3").forEach(h=>{
+        h.addEventListener("click", ()=>{
+            h.parentElement.classList.toggle("open");
+        });
+    });
+  </script>
 
 </body>
 </html>
