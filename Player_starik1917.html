@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
   <meta name="description" content="SwordLand - официальный сайт сервера SwordLand, включающий вики и много чего еще.">
-  <meta name="keywords" content="SwordLand, Sword Land, SL wiki, minecraft server, Minecraft wiki, bepismine, Starik1917, лор майнкрафт, вики сервер, сезоны, Сворд ленд">
+  <meta name="keywords" content="SwordLand, Sword Land, SL wiki, minecraft server, Minecraft wiki, bepismine, Starik1917, лор майнкрафт, вики сервер, сезоны, Сворд ленд, SL">
   <meta name="author" content="SwordLand Community">
   <meta name="robots" content="index, follow">
   <link rel="shortcut icon" href="assets/images/-121x121.png" type="image/x-icon">
@@ -64,6 +64,14 @@
         border: 4px solid #3a3a3a;
         box-shadow: 0 0 0 4px #000 inset;
         padding: 15px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .card.appear {
+        opacity: 1;
+        transform: translateY(0);
     }
 
     .content {
@@ -136,7 +144,16 @@
         border: 3px solid #444;
         background: #1a1a1a;
         overflow: hidden;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
     }
+
+    .block.appear {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
     .block h3 {
         margin: 0;
         padding: 10px;
@@ -162,7 +179,6 @@
         max-height: 600px;
     }
 
-    /* === МОБИЛЬНАЯ АДАПТАЦИЯ === */
     @media(max-width:800px) {
         .container {
             flex-direction: column;
@@ -178,7 +194,6 @@
         }
     }
 
-    /* === ТЁМНАЯ ВЕРХНЯЯ ПАНЕЛЬ — ГЛОБАЛЬНО === */
     .navbar {
         background-color: #2a2a2a !important;
         box-shadow: 0 2px 6px rgba(0,0,0,0.5);
@@ -333,7 +348,8 @@
 
   <div class="container">
 
-    <div class="card">
+    <!-- Левая карточка — теперь с анимацией -->
+    <div class="card fade-in" style="--delay: 0.2s" id="playerCard">
       <div class="skin-box">
         <div class="skin-switch" id="skinButtons"></div>
         <div class="skin-images-container" id="skinImagesContainer"></div>
@@ -351,7 +367,7 @@
         <p><b>Статус:</b> Активен</p>
       </div>
 
-      <div class="block">
+      <div class="block fade-in" style="--delay: 0.3s">
         <h3>▶ Личная информация</h3>
         <div class="inside">
           Имя: по желанию игрока<br>
@@ -361,28 +377,28 @@
     </div>
 
     <div class="content">
-      <div class="block">
+      <div class="block fade-in" style="--delay: 0.4s">
         <h3>▶ Описание персонажа</h3>
         <div class="inside">
           Путешественник, раскрывающий аномалии и нестандартные зоны мира SwordLand.
         </div>
       </div>
 
-      <div class="block">
+      <div class="block fade-in" style="--delay: 0.5s">
         <h3>▶ История попадания на сервер</h3>
         <div class="inside">
           Создатель проекта SwordLand. Присутствует с начала существования сервера.
         </div>
       </div>
 
-      <div class="block">
+      <div class="block fade-in" style="--delay: 0.6s">
         <h3>▶ Лор игрока</h3>
         <div class="inside">
           Известен исследованиями аномалий и участием в запуске радио совместно с двумя другими игроками.
         </div>
       </div>
 
-      <div class="block">
+      <div class="block fade-in" style="--delay: 0.7s">
         <h3>▶ Постройки</h3>
         <div class="inside">
           • Домик лесника в тайге<br>
@@ -392,7 +408,7 @@
         </div>
       </div>
 
-      <div class="block">
+      <div class="block fade-in" style="--delay: 0.8s">
         <h3>▶ Дополнительно</h3>
         <div class="inside">
           Сюжетных предметов не имеет.
@@ -410,6 +426,7 @@
   <script src="assets/dropdown/js/nav-dropdown.js"></script>
   <script src="assets/dropdown/js/navbar-dropdown.js"></script>
   <script src="assets/theme/js/script.js"></script>
+  <script src="assets/smoothscroll/smooth-scroll.js"></script>
 
   <script>
     const skins = [
@@ -463,6 +480,19 @@
       });
     });
 
+    function animateBlocks() {
+      const blocks = document.querySelectorAll('.fade-in');
+      blocks.forEach(block => {
+        const delay = parseFloat(block.style.getPropertyValue('--delay')) || 0;
+        setTimeout(() => block.classList.add('appear'), delay * 1000);
+      });
+    }
+
+    window.addEventListener('load', () => {
+      initSkins();
+      animateBlocks();
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
       const navbarCollapse = document.getElementById('navbarSupportedContent');
       const toggler = document.querySelector('.navbar-toggler');
@@ -492,8 +522,6 @@
           }, 10);
         });
       }
-
-      initSkins();
     });
   </script>
 <script src="assets/smoothscroll/smooth-scroll.js"></script>
