@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starik1917 — Sword Land Wiki</title>
+
+<style>
+@font-face {
+    font-family: 'Minecraft';
+    src: local('Minecraft'), local('Minecraftia'),
+         url('https://fonts.cdnfonts.com/s/18238/Minecraftia-Regular.woff') format('woff');
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'Minecraft', monospace;
+    color: #eaeaea;
+
+    /* PARALLAX BACKGROUND */
+    background:
+        linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+        url("quanto.jpg") center / cover no-repeat fixed;
+}
+
+/* HEADER */
+.header{
+    text-align:center;
+    padding:15px 10px 5px;
+    font-size:28px;
+    text-shadow:2px 2px 0 #000;
+}
+
+/* LAYOUT */
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:20px;
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+/* RIGHT CARD */
+.card{
+    width:320px;
+    background:#1b1b1b;
+    border:4px solid #3a3a3a;
+    box-shadow:0 0 0 4px #000 inset;
+    padding:15px;
+}
+
+/* LEFT CONTENT */
+.content{
+    flex:1;
+    min-width:300px;
+}
+
+/* SKIN */
+.skin-box{
+    text-align:center;
+}
+
+.skin-switch{
+    margin-bottom:6px;
+}
+
+.skin-switch button{
+    padding:3px 8px;
+    font-size:12px;
+    background:#555;
+    border:2px solid #222;
+    color:white;
+    cursor:pointer;
+}
+.skin-switch button:hover{ filter:brightness(1.2); }
+
+.skin-box img{
+    width:140px;
+    image-rendering: pixelated;
+    border:3px solid #555;
+    background:#111;
+}
+
+/* INFO */
+.info p{
+    margin:6px 0;
+}
+
+/* BLOCKS */
+.block{
+    margin-bottom:12px;
+    border:3px solid #444;
+    background:#1a1a1a;
+}
+.block h3{
+    margin:0;
+    padding:10px;
+    cursor:pointer;
+    background:#2a2a2a;
+}
+.block h3:hover{ background:#333; }
+.block .inside{
+    display:none;
+    padding:10px;
+    line-height:1.5;
+}
+.block.open .inside{ display:block; }
+
+/* MOBILE */
+@media(max-width:800px){
+    .container{ flex-direction:column; }
+    .card{ width:100%; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">Starik1917</div>
+
+<div class="container">
+
+    <!-- RIGHT COLUMN -->
+    <div class="card">
+
+        <div class="skin-box">
+            <div class="skin-switch">
+                <button onclick="setSkin(1)">Skin 1</button>
+                <button onclick="setSkin(2)">Skin 2</button>
+            </div>
+            <img id="skin" src="skin1.png" alt="skin">
+        </div>
+
+        <hr>
+
+        <div class="info">
+            <p><b>Ник:</b> Starik1917</p>
+            <p><b>Сезоны:</b> 1, 2</p>
+            <p><b>Коалиции:</b><br>
+            • ЖКВС — текущая<br>
+            • Белая Тёмка — ранее</p>
+            <p><b>Статус:</b> Активен</p>
+        </div>
+
+        <div class="block">
+            <h3>▶ Личная информация</h3>
+            <div class="inside">
+                Имя: по желанию игрока<br>
+                Дата рождения: по желанию игрока
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LEFT CONTENT -->
+    <div class="content">
+
+        <div class="block">
+            <h3>▶ Описание персонажа</h3>
+            <div class="inside">
+                Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.
+            </div>
+        </div>
+
+        <div class="block">
+            <h3>▶ История попадания на сервер</h3>
+            <div class="inside">
+                Создатель проекта Sword Land. Присутствует с начала существования сервера.
+            </div>
+        </div>
+
+        <div class="block">
+            <h3>▶ Лор игрока</h3>
+            <div class="inside">
+                Известен исследованиями аномалий и участием в запуске радио совместно с двумя другими игроками.
+            </div>
+        </div>
+
+        <div class="block">
+            <h3>▶ Постройки</h3>
+            <div class="inside">
+                • Домик лесника в тайге<br>
+                • Магазин «Моховичок» на спавне<br>
+                • Аметистовый дом возле базы hirobrin_13 в вишнёвом лесу<br>
+                • Ферма опыта «Батарейка» на базе «Белой Тёмки»
+            </div>
+        </div>
+
+        <div class="block">
+            <h3>▶ Дополнительно</h3>
+            <div class="inside">
+                Сюжетных предметов не имеет.
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function setSkin(n){
+    document.getElementById("skin").src = n === 1 ? "skin1.png" : "skin2.png";
+}
+
+/* раскрывающиеся блоки */
+document.querySelectorAll(".block h3").forEach(h=>{
+    h.addEventListener("click", ()=>{
+        h.parentElement.classList.toggle("open");
+    });
+});
+</script>
+
+</body>
+</html>
