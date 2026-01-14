@@ -9,7 +9,7 @@
   <meta name="author" content="SwordLand Community">
   <meta name="robots" content="index, follow">
   <link rel="shortcut icon" href="assets/images/-121x121.png" type="image/x-icon">
-  <title>Starik1917 — Sword Land Wiki</title>
+  <title>Starik1917 — SwordLand Wiki</title>
 
   <link rel="stylesheet" href="assets/tether/tether.min.css">
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
@@ -71,43 +71,61 @@
         min-width: 300px;
     }
 
-.skin-box {
-    text-align: center;
-    height: auto; /* убираем фиксированную высоту */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    margin-bottom: 15px;
-    padding: 10px 0;
-}
+    .skin-box {
+        text-align: center;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 15px;
+        padding: 10px 0;
+    }
 
-.skin-switch {
-    margin-bottom: 12px;
-}
+    .skin-switch {
+        margin-bottom: 12px;
+    }
+    .skin-switch button {
+        padding: 4px 10px;
+        font-size: 13px;
+        background: #2a2a2a;
+        border: 2px solid #111;
+        color: #eaeaea;
+        cursor: pointer;
+        margin: 0 3px;
+        transition: background 0.2s, border-color 0.2s;
+    }
+    .skin-switch button:hover {
+        background: #333;
+        border-color: #222;
+    }
+    .skin-switch button.active {
+        background: #3a3a3a;
+        border-color: #444;
+    }
 
-.skin-images-container {
-    position: relative;
-    width: 112px;
-    height: 212px;
-}
+    .skin-images-container {
+        position: relative;
+        width: 112px;
+        height: 212px;
+    }
 
-.skin-images-container img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 112px;
-    height: 212px;
-    image-rendering: pixelated;
-    border: 3px solid #555;
-    background: #111;
-    opacity: 0;
-    transition: opacity 0.4s ease-in-out;
-}
+    .skin-images-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 112px;
+        height: 212px;
+        image-rendering: pixelated;
+        border: 3px solid #555;
+        background: #111;
+        opacity: 0;
+        transition: opacity 0.4s ease-in-out;
+    }
 
-.skin-images-container img.active {
-    opacity: 1;
-}
+    .skin-images-container img.active {
+        opacity: 1;
+    }
 
     .info p {
         margin: 6px 0;
@@ -244,7 +262,6 @@
             background-color: #2a2a2a !important;
         }
 
-        /* Явное переопределение всех возможных классов Mobirise */
         .nav-dropdown .nav-item .nav-link,
         .nav-right .nav-item .nav-link {
             color: #eaeaea !important;
@@ -330,7 +347,7 @@
         <p><b>Коалиции:</b><br>
         • ЖДК(ранее)<br>
         • ЖКВС(ранее)<br>
-        • Белая Тёмка(частично)</p>
+        • Белая Темка(частично)</p>
         <p><b>Статус:</b> Активен</p>
       </div>
 
@@ -347,14 +364,14 @@
       <div class="block">
         <h3>▶ Описание персонажа</h3>
         <div class="inside">
-          Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.
+          Путешественник, раскрывающий аномалии и нестандартные зоны мира SwordLand.
         </div>
       </div>
 
       <div class="block">
         <h3>▶ История попадания на сервер</h3>
         <div class="inside">
-          Создатель проекта Sword Land. Присутствует с начала существования сервера.
+          Создатель проекта SwordLand. Присутствует с начала существования сервера.
         </div>
       </div>
 
@@ -395,11 +412,10 @@
   <script src="assets/theme/js/script.js"></script>
 
   <script>
-    // === ПЕРЕКЛЮЧЕНИЕ СКИНОВ ===
     const skins = [
       { label: "SL1", src: "/assets/images/skin1_starik1917.png" },
       { label: "SL2", src: "/assets/images/skin2_starik1917.png" },
-      { label: "SL3", src: "/assets/images/skin3_starik1917.png" }
+      { label: "Модовый", src: "/assets/images/skin3_starik1917.png" }
     ];
 
     let currentSkinIndex = 0;
@@ -441,34 +457,28 @@
       buttons[currentSkinIndex].classList.add("active");
     }
 
-    // === РАСКРЫТИЕ БЛОКОВ ===
     document.querySelectorAll(".block h3").forEach(h => {
       h.addEventListener("click", () => {
         h.parentElement.classList.toggle("open");
       });
     });
 
-    // === 🔥 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ МОБИЛЬНОГО МЕНЮ ЧЕРЕЗ JS ===
     document.addEventListener('DOMContentLoaded', function() {
       const navbarCollapse = document.getElementById('navbarSupportedContent');
       const toggler = document.querySelector('.navbar-toggler');
 
       if (navbarCollapse && toggler) {
-        // При открытии/закрытии меню
         toggler.addEventListener('click', function() {
           setTimeout(() => {
-            // Принудительно задаём стили
             navbarCollapse.style.backgroundColor = '#2a2a2a';
             navbarCollapse.style.borderTop = '1px solid #444';
             navbarCollapse.style.padding = '10px 0';
 
-            // Все ссылки — светлые
             const links = navbarCollapse.querySelectorAll('a');
             links.forEach(link => {
               link.style.color = '#eaeaea';
             });
 
-            // Подменю — тёмное
             const dropdowns = navbarCollapse.querySelectorAll('.dropdown-menu');
             dropdowns.forEach(menu => {
               menu.style.backgroundColor = '#2a2a2a';
@@ -483,10 +493,9 @@
         });
       }
 
-      // Инициализация скинов
       initSkins();
     });
   </script>
-
+<script src="assets/smoothscroll/smooth-scroll.js"></script>
 </body>
 </html>
