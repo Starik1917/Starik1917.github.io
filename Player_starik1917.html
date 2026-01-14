@@ -9,7 +9,7 @@
   <meta name="author" content="SwordLand Community">
   <meta name="robots" content="index, follow">
   <link rel="shortcut icon" href="assets/images/-121x121.png" type="image/x-icon">
-  <title>Starik1917 — Sword Land Wiki</title>
+  <title>Starik1917 — SwordLand Wiki</title>
 
   <link rel="stylesheet" href="assets/tether/tether.min.css">
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
@@ -73,42 +73,49 @@
 
     .skin-box {
         text-align: center;
-        position: relative;
-        height: 160px;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 15px;
+        padding: 10px 0;
     }
 
     .skin-switch {
-        margin-bottom: 6px;
+        margin-bottom: 12px;
     }
-
     .skin-switch button {
-        padding: 3px 8px;
-        font-size: 12px;
-        background: #555;
-        border: 2px solid #222;
-        color: white;
+        padding: 4px 10px;
+        font-size: 13px;
+        background: #2a2a2a;
+        border: 2px solid #111;
+        color: #eaeaea;
         cursor: pointer;
-        margin: 0 2px;
+        margin: 0 3px;
+        transition: background 0.2s, border-color 0.2s;
     }
     .skin-switch button:hover {
-        filter: brightness(1.2);
+        background: #333;
+        border-color: #222;
     }
     .skin-switch button.active {
-        background: #777;
+        background: #3a3a3a;
+        border-color: #444;
     }
 
     .skin-images-container {
         position: relative;
-        width: 140px;
-        height: 140px;
-        margin: 0 auto;
+        width: 112px;
+        height: 212px;
     }
 
     .skin-images-container img {
         position: absolute;
         top: 0;
         left: 0;
-        width: 140px;
+        width: 112px;
+        height: 212px;
         image-rendering: pixelated;
         border: 3px solid #555;
         background: #111;
@@ -155,11 +162,23 @@
         max-height: 600px;
     }
 
+    /* === МОБИЛЬНАЯ АДАПТАЦИЯ === */
     @media(max-width:800px) {
-        .container { flex-direction: column; }
-        .card { width: 100%; }
+        .container {
+            flex-direction: column;
+            padding: 15px;
+        }
+        .card {
+            width: 100%;
+        }
+        .skin-box {
+            height: auto;
+            min-height: 200px;
+            padding-bottom: 15px;
+        }
     }
 
+    /* === ТЁМНАЯ ВЕРХНЯЯ ПАНЕЛЬ — ГЛОБАЛЬНО === */
     .navbar {
         background-color: #2a2a2a !important;
         box-shadow: 0 2px 6px rgba(0,0,0,0.5);
@@ -177,12 +196,92 @@
         background-color: #333 !important;
     }
 
+    .dropdown-menu {
+        background-color: #2a2a2a !important;
+        border: 1px solid #444 !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.4) !important;
+    }
+
+    .dropdown-menu .dropdown-item {
+        color: #eaeaea !important;
+        background-color: #2a2a2a !important;
+    }
+
     .navbar-toggler {
-        border-color: #555;
+        border-color: #555 !important;
     }
 
     .hamburger span {
-        background: #eaeaea;
+        background: #eaeaea !important;
+    }
+
+    /* 🔥 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДЛЯ МОБИЛЬНОГО МЕНЮ */
+    @media (max-width: 991.98px) {
+        .navbar-collapse {
+            background-color: #2a2a2a !important;
+            padding: 10px 0 !important;
+            border-top: 1px solid #444 !important;
+        }
+
+        .navbar-nav,
+        .nav-dropdown,
+        .nav-right {
+            background-color: #2a2a2a !important;
+            flex-direction: column !important;
+            padding-left: 0 !important;
+            margin: 0 !important;
+        }
+
+        .navbar-nav .nav-item,
+        .nav-dropdown .nav-item {
+            width: 100% !important;
+        }
+
+        .navbar-nav .nav-link,
+        .nav-dropdown .nav-link,
+        .nav-dropdown .dropdown-toggle {
+            padding: 10px 20px !important;
+            display: block !important;
+            color: #eaeaea !important;
+            background-color: transparent !important;
+        }
+
+        .dropdown-menu {
+            background-color: #2a2a2a !important;
+            position: static !important;
+            float: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        .dropdown-menu .dropdown-item {
+            padding: 10px 40px !important;
+            color: #eaeaea !important;
+            background-color: #2a2a2a !important;
+        }
+
+        .nav-dropdown .nav-item .nav-link,
+        .nav-right .nav-item .nav-link {
+            color: #eaeaea !important;
+            background: transparent !important;
+        }
+
+        .nav-dropdown .nav-item .nav-link:hover,
+        .nav-right .nav-item .nav-link:hover {
+            background-color: #333 !important;
+        }
+
+        .nav-dropdown .dropdown-menu,
+        .nav-right .dropdown-menu {
+            background-color: #2a2a2a !important;
+        }
+
+        .nav-dropdown .dropdown-menu .dropdown-item,
+        .nav-right .dropdown-menu .dropdown-item {
+            color: #eaeaea !important;
+        }
     }
   </style>
 </head>
@@ -199,7 +298,7 @@
                     </a>
                 </span>
                 <span class="navbar-caption-wrap">
-                    <a class="navbar-caption display-7" href="index.html" style="color: #eaeaea;">SwordLand</a>
+                    <a class="navbar-caption display-7" href="index.html">SwordLand</a>
                 </span>
             </div>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -248,7 +347,7 @@
         <p><b>Коалиции:</b><br>
         • ЖДК(ранее)<br>
         • ЖКВС(ранее)<br>
-        • Белая Тёмка(частично)</p>
+        • Белая Темка(частично)</p>
         <p><b>Статус:</b> Активен</p>
       </div>
 
@@ -265,14 +364,14 @@
       <div class="block">
         <h3>▶ Описание персонажа</h3>
         <div class="inside">
-          Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land. Путешественник, раскрывающий аномалии и нестандартные зоны мира Sword Land.
+          Путешественник, раскрывающий аномалии и нестандартные зоны мира SwordLand.
         </div>
       </div>
 
       <div class="block">
         <h3>▶ История попадания на сервер</h3>
         <div class="inside">
-          Создатель проекта Sword Land. Присутствует с начала существования сервера.
+          Создатель проекта SwordLand. Присутствует с начала существования сервера.
         </div>
       </div>
 
@@ -303,6 +402,7 @@
 
   </div>
 
+  <!-- Scripts -->
   <script src="assets/web/assets/jquery/jquery.min.js"></script>
   <script src="assets/popper/popper.min.js"></script>
   <script src="assets/tether/tether.min.js"></script>
@@ -315,7 +415,7 @@
     const skins = [
       { label: "SL1", src: "/assets/images/skin1_starik1917.png" },
       { label: "SL2", src: "/assets/images/skin2_starik1917.png" },
-      { label: "SL3", src: "/assets/images/skin3_starik1917.png" }
+      { label: "Модовый", src: "/assets/images/skin3_starik1917.png" }
     ];
 
     let currentSkinIndex = 0;
@@ -363,7 +463,38 @@
       });
     });
 
-    initSkins();
+    document.addEventListener('DOMContentLoaded', function() {
+      const navbarCollapse = document.getElementById('navbarSupportedContent');
+      const toggler = document.querySelector('.navbar-toggler');
+
+      if (navbarCollapse && toggler) {
+        toggler.addEventListener('click', function() {
+          setTimeout(() => {
+            navbarCollapse.style.backgroundColor = '#2a2a2a';
+            navbarCollapse.style.borderTop = '1px solid #444';
+            navbarCollapse.style.padding = '10px 0';
+
+            const links = navbarCollapse.querySelectorAll('a');
+            links.forEach(link => {
+              link.style.color = '#eaeaea';
+            });
+
+            const dropdowns = navbarCollapse.querySelectorAll('.dropdown-menu');
+            dropdowns.forEach(menu => {
+              menu.style.backgroundColor = '#2a2a2a';
+              menu.style.border = '1px solid #444';
+              const items = menu.querySelectorAll('.dropdown-item');
+              items.forEach(item => {
+                item.style.color = '#eaeaea';
+                item.style.backgroundColor = '#2a2a2a';
+              });
+            });
+          }, 10);
+        });
+      }
+
+      initSkins();
+    });
   </script>
 <script src="assets/smoothscroll/smooth-scroll.js"></script>
 </body>
