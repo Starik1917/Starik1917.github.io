@@ -72,58 +72,43 @@
         min-width: 300px;
     }
 
-    .skin-box {
-        text-align: center;
-        height: 200px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        margin-bottom: 15px;
-    }
+.skin-box {
+    text-align: center;
+    height: auto; /* убираем фиксированную высоту */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 15px;
+    padding: 10px 0;
+}
 
-    .skin-switch {
-        margin-bottom: 8px;
-    }
+.skin-switch {
+    margin-bottom: 12px;
+}
 
-    .skin-switch button {
-        padding: 3px 8px;
-        font-size: 12px;
-        background: #555;
-        border: 2px solid #222;
-        color: white;
-        cursor: pointer;
-        margin: 0 2px;
-    }
-    .skin-switch button:hover {
-        filter: brightness(1.2);
-    }
-    .skin-switch button.active {
-        background: #777;
-    }
+.skin-images-container {
+    position: relative;
+    width: auto;
+    height: auto;
+}
 
-    .skin-images-container {
-        position: relative;
-        width: 140px;
-        height: 140px;
-    }
+.skin-images-container img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: auto;
+    height: auto;
+    image-rendering: pixelated;
+    border: 3px solid #555;
+    background: #111;
+    opacity: 0;
+    transition: opacity 0.4s ease-in-out;
+}
 
-    .skin-images-container img {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 140px;
-        height: 140px;
-        image-rendering: pixelated;
-        border: 3px solid #555;
-        background: #111;
-        opacity: 0;
-        transition: opacity 0.4s ease-in-out;
-    }
-
-    .skin-images-container img.active {
-        opacity: 1;
-    }
+.skin-images-container img.active {
+    opacity: 1;
+}
 
     .info p {
         margin: 6px 0;
