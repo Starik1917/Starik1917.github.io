@@ -11,7 +11,24 @@
   <meta name="robots" content="index, follow">
   <link rel="shortcut icon" href="assets/images/-121x121.png" type="image/x-icon">
   <meta name="description" content="">
-  
+  <style>
+.nav-frame {
+    border: 5px solid #3a3a3a;
+    box-shadow: 
+        0 0 0 3px #000 inset,
+        0 4px 10px rgba(0,0,0,0.6);
+    background: #111;
+    padding: 6px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.nav-frame:hover {
+    transform: scale(1.03);
+    box-shadow: 
+        0 0 0 3px #000 inset,
+        0 8px 16px rgba(0,0,0,0.8);
+}
+</style>
   
   <title>SwordLand</title>
   <link rel="stylesheet" href="assets/tether/tether.min.css">
@@ -148,7 +165,9 @@
             <!-- Карточка: Игроки -->
             <div class="col-md-4 col-sm-6 mb-4 text-center">
                 <a href="players.html" style="text-decoration:none;">
-                    <img src="assets/images/nav_players.png" class="img-fluid" style="border-radius:8px;">
+                  <div class="nav-frame">
+                    <img src="assets/images/nav_players.png" class="img-fluid">
+                  </div>
                     <p class="mbr-fonts-style mt-2 display-5">Игроки</p>
                 </a>
             </div>
