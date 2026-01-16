@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -21,6 +24,69 @@
   <link rel="stylesheet" href="assets/mobirise/css/mbr-additional.css" type="text/css">
 
   <style>
+
+body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #3b5c25; /* Типичный зелёный фон Minecraft */
+      font-family: 'Minecraft', 'Press Start 2P', monospace;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    /* Подключение пиксельного шрифта */
+    @font-face {
+      font-family: 'Minecraft';
+      src: url('https://fonts.cdnfonts.com/s/36473/Minecraft.woff2') format('woff2');
+    }
+
+    .loading-screen {
+      text-align: center;
+      z-index: 10;
+    }
+
+    .logo {
+      font-size: 32px;
+      margin-bottom: 30px;
+      letter-spacing: 4px;
+      text-shadow: 2px 2px 0 #000;
+    }
+
+    .progress-bar-container {
+      width: 300px;
+      height: 20px;
+      background-color: #000;
+      border: 2px solid #fff;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: #00ff00;
+      transition: width 0.3s ease;
+    }
+
+    .loading-text {
+      margin-top: 20px;
+      font-size: 14px;
+      letter-spacing: 2px;
+    }
+
+    /* Пиксельный стиль для текста */
+    * {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+
+
     html {
       scroll-behavior: smooth;
     }
@@ -310,7 +376,12 @@
 </head>
 
 <body>
-
+  <div class="loading-screen">
+    <div class="logo">MINECRAFT</div>
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <div class="loading-text">LOADING...</div>
   <section class="menu cid-s48OLK6784" once="menu" id="menu1-h">
     <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
         <div class="container-fluid">
@@ -429,6 +500,24 @@
   <script src="assets/smoothscroll/smooth-scroll.js"></script>
 
   <script>
+
+   // Имитация загрузки
+    let progress = 0;
+    const bar = document.getElementById('progressBar');
+    const interval = setInterval(() => {
+      progress += Math.random() * 5;
+      if (progress >= 100) {
+        progress = 100;
+        clearInterval(interval);
+        // После завершения можно скрыть экран или перейти на основной контент
+        setTimeout(() => {
+          document.body.innerHTML = '<h1 style="color:white;text-align:center;margin-top:20vh;">Добро пожаловать в мир Minecraft!</h1>';
+        }, 500);
+      }
+      bar.style.width = progress + '%';
+    }, 200);
+
+
     const skins = [
       { label: "SL2", src: "/assets/images/skin2_skuliaf.png" },
     ];
