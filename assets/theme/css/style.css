@@ -46,6 +46,12 @@ a:hover {
 a:visited {
     color: #3FAF3F; /* можно выбрать другой */
 }
+a.no-highlight,
+a.no-highlight:visited,
+a.no-highlight:hover {
+    color: inherit;        /* цвет текста будет как у родителя */
+    text-decoration: none; /* убираем подчёркивание */
+}
 figure {
   margin-bottom: 0; }
 
