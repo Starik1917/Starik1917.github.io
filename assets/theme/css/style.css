@@ -30,6 +30,22 @@ a {
   a, a:hover {
     text-decoration: none; }
 
+/* Основной цвет ссылок */
+a {
+    color: #3FAF3F;
+    text-decoration: none; /* убирает подчёркивание, если нужно */
+}
+
+/* При наведении мышкой */
+a:hover {
+    color: #3FAF3F;
+    text-decoration: underline; /* подчёркивание при наведении, опционально */
+}
+
+/* Для уже посещённых ссылок */
+a:visited {
+    color: #3FAF3F; /* можно выбрать другой */
+}
 figure {
   margin-bottom: 0; }
 
