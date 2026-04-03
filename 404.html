@@ -36,7 +36,7 @@
       min-height: 100vh;
       padding: 2rem 1rem;
       background-image:
-        linear-gradient(rgba(14, 14, 14, 0.42), rgba(14, 14, 14, 0.5)),
+        linear-gradient(rgba(8, 12, 20, 0.26), rgba(8, 12, 20, 0.34)),
         url("assets/images/404-bg.jpg");
       background-position: center center;
       background-repeat: no-repeat;
@@ -46,16 +46,15 @@
     }
 
     .cid-404-hero .mbr-overlay {
-      opacity: 0.18;
-      background-color: #000000;
+      opacity: 0;
+      background-color: transparent;
     }
 
     .cid-404-hero .item-wrapper {
       height: 100%;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+      background: transparent;
+      border: 0;
+      box-shadow: none;
     }
 
     .cid-404-hero .item-img {
@@ -73,8 +72,10 @@
       font-weight: 900;
       line-height: 1;
       letter-spacing: 0.08em;
-      color: #ffffff;
-      text-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      color: #dfe7f5;
+      text-shadow:
+        0 0 18px rgba(196, 216, 255, 0.28),
+        0 6px 22px rgba(6, 10, 18, 0.7);
     }
 
     .cid-404-hero .item-content {
@@ -90,8 +91,17 @@
     .cid-404-hero .item-title strong,
     .cid-404-hero .mbr-section-title,
     .cid-404-hero .mbr-section-title strong {
-      color: #ffffff;
-      text-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
+      color: #eef3ff;
+      text-shadow:
+        0 0 20px rgba(170, 198, 255, 0.16),
+        0 8px 24px rgba(6, 10, 18, 0.78);
+    }
+
+    .cid-404-hero .item-title {
+      font-size: clamp(1.6rem, 3.4vw, 2.8rem);
+      max-width: 760px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .cid-404-hero .item-footer {
@@ -102,13 +112,15 @@
 
     .cid-404-hero .btn-black,
     .cid-404-hero .btn-black:active {
-      background-color: rgba(17, 17, 17, 0.72) !important;
-      border-color: rgba(255, 255, 255, 0.22) !important;
+      background-color: rgba(10, 16, 28, 0.58) !important;
+      border-color: rgba(207, 223, 255, 0.28) !important;
+      color: #eef3ff !important;
+      box-shadow: 0 10px 24px rgba(5, 8, 14, 0.36);
     }
 
     .cid-404-hero .btn-black:hover,
     .cid-404-hero .btn-black:focus {
-      background-color: rgba(17, 17, 17, 0.88) !important;
+      background-color: rgba(10, 16, 28, 0.82) !important;
     }
   </style>
 </head>
