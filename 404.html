@@ -51,7 +51,8 @@
 
     .cid-404-hero .item-wrapper {
       height: 100%;
-      background: rgba(255, 255, 255, 0.92);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(3px);
     }
 
     .cid-404-hero .item-img {
@@ -59,7 +60,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #0f0f0f 0%, #262626 100%);
+      background: transparent;
     }
 
     .cid-404-hero .error-code {
@@ -79,6 +80,11 @@
     .cid-404-hero .bg-path {
       margin-top: 1rem;
       word-break: break-all;
+    }
+
+    .cid-404-hero .item-footer {
+      display: flex;
+      justify-content: center;
     }
   </style>
 </head>
@@ -160,7 +166,6 @@
             </div>
             <div class="mbr-section-btn item-footer mt-2">
               <a href="index.html" class="btn item-btn btn-black display-7">На главную</a>
-              <a href="players.html" class="btn item-btn btn-success-outline display-7">К игрокам</a>
             </div>
           </div>
         </div>
