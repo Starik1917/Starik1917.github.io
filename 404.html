@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+  <meta name="robots" content="noindex">
+  <title>404 | SwordLand</title>
+  <link rel="shortcut icon" href="assets/images/-121x121.png" type="image/x-icon">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <style>
+    :root {
+      --page-bg: url("assets/images/404-bg.jpg");
+      --panel-bg: rgba(14, 10, 8, 0.76);
+      --panel-border: rgba(214, 182, 122, 0.7);
+      --text-main: #f6e7c8;
+      --text-muted: #d9c9a4;
+      --accent: #c78a3b;
+      --accent-hover: #e3a456;
+      --shadow: rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "IBM Plex Sans", Arial, sans-serif;
+      color: var(--text-main);
+      background:
+        linear-gradient(rgba(9, 7, 6, 0.58), rgba(9, 7, 6, 0.82)),
+        var(--page-bg) center center / cover no-repeat,
+        radial-gradient(circle at top, #3a2a18 0%, #100c09 65%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .court-card {
+      width: min(760px, 100%);
+      padding: 40px 32px;
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      box-shadow: 0 24px 60px var(--shadow);
+      backdrop-filter: blur(8px);
+      text-align: center;
+    }
+
+    .error-code {
+      margin: 0;
+      font-size: clamp(88px, 18vw, 180px);
+      line-height: 0.9;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #fff0d2;
+      text-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    .error-title {
+      margin: 18px 0 0;
+      font-size: clamp(28px, 4vw, 46px);
+      font-weight: 700;
+    }
+
+    .error-text {
+      max-width: 560px;
+      margin: 18px auto 0;
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--text-muted);
+    }
+
+    .actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .action-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 190px;
+      padding: 14px 22px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
+    }
+
+    .action-link.primary {
+      background: var(--accent);
+      color: #1c1207;
+    }
+
+    .action-link.secondary {
+      border: 1px solid rgba(246, 231, 200, 0.32);
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .action-link:hover {
+      transform: translateY(-2px);
+    }
+
+    .action-link.primary:hover {
+      background: var(--accent-hover);
+      color: #1c1207;
+    }
+
+    .action-link.secondary:hover {
+      border-color: rgba(246, 231, 200, 0.6);
+      color: #ffffff;
+    }
+
+    .bg-note {
+      margin-top: 22px;
+      font-size: 14px;
+      color: rgba(246, 231, 200, 0.68);
+    }
+
+    @media (max-width: 575px) {
+      .court-card {
+        padding: 32px 22px;
+        border-radius: 20px;
+      }
+
+      .error-text {
+        font-size: 16px;
+      }
+
+      .action-link {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="court-card">
+    <p class="error-code">404</p>
+    <h1 class="error-title">Похоже, вы попали в суд.</h1>
+    <p class="error-text">
+      Запрошенная страница не найдена. Возможно, ссылку уже унесли как вещественное доказательство,
+      а тебе пока лучше вернуться на главную и сделать вид, что ничего не было.
+    </p>
+    <div class="actions">
+      <a class="action-link primary" href="index.html">Вернуться на главную</a>
+      <a class="action-link secondary" href="players.html">К игрокам</a>
+    </div>
+    <p class="bg-note">Фон можно заменить одной строкой в CSS: переменная <code>--page-bg</code> в начале файла.</p>
+  </main>
+</body>
+</html>
