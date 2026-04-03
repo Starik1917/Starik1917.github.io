@@ -1,160 +1,196 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Mobirise v6.1.5, mobirise.com">
   <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
   <meta name="robots" content="noindex">
-  <title>404 | SwordLand</title>
   <link rel="shortcut icon" href="assets/images/-121x121.png" type="image/x-icon">
+  <meta name="description" content="">
+
+  <title>404 | SwordLand</title>
   <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/dropdown/css/style.css">
+  <link rel="stylesheet" href="assets/socicon/css/styles.css">
+  <link rel="stylesheet" href="assets/theme/css/style.css">
+  <link rel="preload" href="https://fonts.googleapis.com/css?family=Roboto:100,200,300,400,500,600,700,800,900,100i,200i,300i,400i,500i,600i,700i,800i,900i&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:100,200,300,400,500,600,700,800,900,100i,200i,300i,400i,500i,600i,700i,800i,900i&display=swap"></noscript>
+  <link rel="preload" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:100,100i,200,200i,300,300i,400,400i,500,500i,600,600i,700,700i&display=swap"></noscript>
+  <link rel="preload" as="style" href="assets/mobirise/css/mbr-additional.css?v=D67vpU">
+  <link rel="stylesheet" href="assets/mobirise/css/mbr-additional.css?v=D67vpU" type="text/css">
   <style>
-    :root {
-      --page-bg: url("assets/images/404-bg.jpg");
-      --panel-bg: rgba(14, 10, 8, 0.76);
-      --panel-border: rgba(214, 182, 122, 0.7);
-      --text-main: #f6e7c8;
-      --text-muted: #d9c9a4;
-      --accent: #c78a3b;
-      --accent-hover: #e3a456;
-      --shadow: rgba(0, 0, 0, 0.45);
+    @media (min-width: 992px) {
+      .navbar-nav .dropdown:hover > .dropdown-menu {
+        display: block;
+        margin-top: 0;
+      }
+
+      .navbar-nav .dropdown:hover > .dropdown-toggle::after {
+        transform: rotate(180deg);
+      }
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
+    .cid-404-hero {
       min-height: 100vh;
-      font-family: "IBM Plex Sans", Arial, sans-serif;
-      color: var(--text-main);
-      background:
-        linear-gradient(rgba(9, 7, 6, 0.58), rgba(9, 7, 6, 0.82)),
-        var(--page-bg) center center / cover no-repeat,
-        radial-gradient(circle at top, #3a2a18 0%, #100c09 65%);
+      padding-top: 8rem;
+      padding-bottom: 4rem;
+      background-image:
+        linear-gradient(rgba(14, 14, 14, 0.62), rgba(14, 14, 14, 0.72)),
+        url("assets/images/404-bg.jpg");
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    .cid-404-hero .mbr-overlay {
+      opacity: 0.35;
+      background-color: #000000;
+    }
+
+    .cid-404-hero .item-wrapper {
+      height: 100%;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .cid-404-hero .item-img {
+      min-height: 260px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      background: linear-gradient(135deg, #0f0f0f 0%, #262626 100%);
     }
 
-    .court-card {
-      width: min(760px, 100%);
-      padding: 40px 32px;
-      background: var(--panel-bg);
-      border: 1px solid var(--panel-border);
-      border-radius: 24px;
-      box-shadow: 0 24px 60px var(--shadow);
-      backdrop-filter: blur(8px);
-      text-align: center;
-    }
-
-    .error-code {
+    .cid-404-hero .error-code {
       margin: 0;
-      font-size: clamp(88px, 18vw, 180px);
-      line-height: 0.9;
+      font-size: clamp(5rem, 14vw, 8rem);
       font-weight: 900;
+      line-height: 1;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #fff0d2;
-      text-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
-    }
-
-    .error-title {
-      margin: 18px 0 0;
-      font-size: clamp(28px, 4vw, 46px);
-      font-weight: 700;
-    }
-
-    .error-text {
-      max-width: 560px;
-      margin: 18px auto 0;
-      font-size: 18px;
-      line-height: 1.7;
-      color: var(--text-muted);
-    }
-
-    .actions {
-      display: flex;
-      gap: 14px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-top: 30px;
-    }
-
-    .action-link {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 190px;
-      padding: 14px 22px;
-      border-radius: 999px;
-      text-decoration: none;
-      font-weight: 700;
-      transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease;
-    }
-
-    .action-link.primary {
-      background: var(--accent);
-      color: #1c1207;
-    }
-
-    .action-link.secondary {
-      border: 1px solid rgba(246, 231, 200, 0.32);
-      color: var(--text-main);
-      background: rgba(255, 255, 255, 0.04);
-    }
-
-    .action-link:hover {
-      transform: translateY(-2px);
-    }
-
-    .action-link.primary:hover {
-      background: var(--accent-hover);
-      color: #1c1207;
-    }
-
-    .action-link.secondary:hover {
-      border-color: rgba(246, 231, 200, 0.6);
       color: #ffffff;
+      text-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
     }
 
-    .bg-note {
-      margin-top: 22px;
-      font-size: 14px;
-      color: rgba(246, 231, 200, 0.68);
+    .cid-404-hero .item-title {
+      margin-bottom: 1rem;
     }
 
-    @media (max-width: 575px) {
-      .court-card {
-        padding: 32px 22px;
-        border-radius: 20px;
-      }
-
-      .error-text {
-        font-size: 16px;
-      }
-
-      .action-link {
-        width: 100%;
-      }
+    .cid-404-hero .bg-path {
+      margin-top: 1rem;
+      word-break: break-all;
     }
   </style>
 </head>
 <body>
-  <main class="court-card">
-    <p class="error-code">404</p>
-    <h1 class="error-title">Похоже, вы попали в суд.</h1>
-    <p class="error-text">
-      Запрошенная страница не найдена. Возможно, ссылку уже унесли как вещественное доказательство,
-      а тебе пока лучше вернуться на главную и сделать вид, что ничего не было.
-    </p>
-    <div class="actions">
-      <a class="action-link primary" href="index.html">Вернуться на главную</a>
-      <a class="action-link secondary" href="players.html">К игрокам</a>
+  <section data-bs-version="5.1" class="menu cid-s48OLK6784" once="menu" id="menu1-404">
+    <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
+      <div class="container-fluid">
+        <div class="navbar-brand">
+          <span class="navbar-logo">
+            <a href="index.html">
+              <img src="assets/images/-121x121.png" alt="SwordLand" style="height: 3.8rem;">
+            </a>
+          </span>
+          <span class="navbar-caption-wrap">
+            <a class="navbar-caption text-black text-primary display-7" href="index.html">SwordLand</a>
+          </span>
+        </div>
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent"
+                aria-controls="navbarSupportedContent"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+          <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true">
+            <li class="nav-item">
+              <a class="nav-link link text-black text-primary display-4" href="players.html">Игроки</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link link text-black dropdown-toggle display-4"
+                 href="#"
+                 data-toggle="dropdown-submenu"
+                 aria-expanded="false">
+                Сезоны
+              </a>
+              <div class="dropdown-menu">
+                <a class="text-black dropdown-item text-primary display-4" href="SL1.html">SwordLand 1</a>
+                <a class="text-black dropdown-item text-primary display-4" href="SL2.html">SwordLand 2</a>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+  </section>
+
+  <section data-bs-version="5.1" class="features3 cid-404-hero" id="features4-404">
+    <div class="mbr-overlay"></div>
+    <div class="container-fluid">
+      <div class="mbr-section-head">
+        <h4 class="mbr-section-title mbr-fonts-style align-center mb-0 display-2">
+          <strong>Страница не найдена</strong>
+        </h4>
+      </div>
+      <div class="row mt-4 justify-content-center">
+        <div class="item features-image col-12 col-md-10 col-lg-7">
+          <div class="item-wrapper">
+            <div class="item-img">
+              <p class="error-code">404</p>
+            </div>
+            <div class="item-content">
+              <h5 class="item-title mbr-fonts-style display-5">
+                <strong>Похоже, вы попали в суд.</strong>
+              </h5>
+              <h6 class="item-subtitle mbr-fonts-style mt-1 display-7">
+                Нужной страницы тут нет. Либо ссылка битая, либо материалы уже приобщили к делу.
+                Лучше вернуться на главную или снова зайти к игрокам.
+              </h6>
+              <p class="mbr-text mbr-fonts-style bg-path display-7">
+                Фон нужно положить в файл <strong>assets/images/404-bg.jpg</strong>
+              </p>
+            </div>
+            <div class="mbr-section-btn item-footer mt-2">
+              <a href="index.html" class="btn item-btn btn-black display-7">На главную</a>
+              <a href="players.html" class="btn item-btn btn-success-outline display-7">К игрокам</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <p class="bg-note">Фон можно заменить одной строкой в CSS: переменная <code>--page-bg</code> в начале файла.</p>
-  </main>
+  </section>
+
+  <section data-bs-version="5.1" class="footer3 cid-s48P1Icc8J" once="footers" id="footer3-404">
+    <div class="container">
+      <div class="media-container-row align-center mbr-white">
+        <div class="row row-links">
+          <ul class="foot-menu">
+            <li class="foot-menu-item mbr-fonts-style display-7"><a href="index.html" class="text-success">Социальные сети</a></li>
+            <li class="foot-menu-item mbr-fonts-style display-7"><a href="SL1.html" class="text-success text-primary">Википедия</a></li>
+            <li class="foot-menu-item mbr-fonts-style display-7"><a href="index.html#content1-8" class="text-success text-primary">Жаба</a></li>
+          </ul>
+        </div>
+        <div class="row row-copirayt">
+          <p class="mbr-text mb-0 mbr-fonts-style mbr-white align-center display-7">SwordLand.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="assets/web/assets/jquery/jquery.min.js"></script>
+  <script src="assets/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/smoothscroll/smooth-scroll.js"></script>
+  <script src="assets/ytplayer/index.js"></script>
+  <script src="assets/theme/js/script.js"></script>
+  <script src="assets/dropdown/js/nav-dropdown.js"></script>
+  <script src="assets/dropdown/js/navbar-dropdown.js"></script>
 </body>
 </html>
