@@ -34,33 +34,37 @@
 
     .cid-404-hero {
       min-height: 100vh;
-      padding-top: 8rem;
-      padding-bottom: 4rem;
+      padding: 2rem 1rem;
       background-image:
-        linear-gradient(rgba(14, 14, 14, 0.62), rgba(14, 14, 14, 0.72)),
+        linear-gradient(rgba(14, 14, 14, 0.42), rgba(14, 14, 14, 0.5)),
         url("assets/images/404-bg.jpg");
       background-position: center center;
       background-repeat: no-repeat;
       background-size: cover;
+      display: flex;
+      align-items: center;
     }
 
     .cid-404-hero .mbr-overlay {
-      opacity: 0.35;
+      opacity: 0.18;
       background-color: #000000;
     }
 
     .cid-404-hero .item-wrapper {
       height: 100%;
-      background: rgba(255, 255, 255, 0.72);
-      backdrop-filter: blur(3px);
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
     }
 
     .cid-404-hero .item-img {
-      min-height: 260px;
+      min-height: auto;
       display: flex;
       align-items: center;
       justify-content: center;
       background: transparent;
+      padding: 3rem 1rem 1rem;
     }
 
     .cid-404-hero .error-code {
@@ -73,75 +77,46 @@
       text-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
     }
 
+    .cid-404-hero .item-content {
+      text-align: center;
+      padding-top: 0;
+    }
+
     .cid-404-hero .item-title {
       margin-bottom: 1rem;
+    }
+
+    .cid-404-hero .item-title,
+    .cid-404-hero .item-title strong,
+    .cid-404-hero .mbr-section-title,
+    .cid-404-hero .mbr-section-title strong {
+      color: #ffffff;
+      text-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
     }
 
     .cid-404-hero .item-footer {
       display: flex;
       justify-content: center;
+      padding-bottom: 3rem;
+    }
+
+    .cid-404-hero .btn-black,
+    .cid-404-hero .btn-black:active {
+      background-color: rgba(17, 17, 17, 0.72) !important;
+      border-color: rgba(255, 255, 255, 0.22) !important;
+    }
+
+    .cid-404-hero .btn-black:hover,
+    .cid-404-hero .btn-black:focus {
+      background-color: rgba(17, 17, 17, 0.88) !important;
     }
   </style>
 </head>
 <body>
-  <section data-bs-version="5.1" class="menu cid-s48OLK6784" once="menu" id="menu1-404">
-    <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
-      <div class="container-fluid">
-        <div class="navbar-brand">
-          <span class="navbar-logo">
-            <a href="index.html">
-              <img src="assets/images/-121x121.png" alt="SwordLand" style="height: 3.8rem;">
-            </a>
-          </span>
-          <span class="navbar-caption-wrap">
-            <a class="navbar-caption text-black text-primary display-7" href="index.html">SwordLand</a>
-          </span>
-        </div>
-        <button class="navbar-toggler" type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
-          <div class="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true">
-            <li class="nav-item">
-              <a class="nav-link link text-black text-primary display-4" href="players.html">Игроки</a>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link link text-black dropdown-toggle display-4"
-                 href="#"
-                 data-toggle="dropdown-submenu"
-                 aria-expanded="false">
-                Сезоны
-              </a>
-              <div class="dropdown-menu">
-                <a class="text-black dropdown-item text-primary display-4" href="SL1.html">SwordLand 1</a>
-                <a class="text-black dropdown-item text-primary display-4" href="SL2.html">SwordLand 2</a>
-              </div>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-  </section>
-
   <section data-bs-version="5.1" class="features3 cid-404-hero" id="features4-404">
     <div class="mbr-overlay"></div>
     <div class="container-fluid">
-      <div class="mbr-section-head">
-        <h4 class="mbr-section-title mbr-fonts-style align-center mb-0 display-2">
-          <strong>Страница не найдена</strong>
-        </h4>
-      </div>
-      <div class="row mt-4 justify-content-center">
+      <div class="row justify-content-center">
         <div class="item features-image col-12 col-md-10 col-lg-7">
           <div class="item-wrapper">
             <div class="item-img">
@@ -153,26 +128,9 @@
               </h5>
             </div>
             <div class="mbr-section-btn item-footer mt-2">
-              <a href="index.html" class="btn item-btn btn-black display-7">На главную</a>
+              <a href="index.html" class="btn item-btn btn-black display-7">Вернуться на главную</a>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section data-bs-version="5.1" class="footer3 cid-s48P1Icc8J" once="footers" id="footer3-404">
-    <div class="container">
-      <div class="media-container-row align-center mbr-white">
-        <div class="row row-links">
-          <ul class="foot-menu">
-            <li class="foot-menu-item mbr-fonts-style display-7"><a href="index.html" class="text-success">Социальные сети</a></li>
-            <li class="foot-menu-item mbr-fonts-style display-7"><a href="SL1.html" class="text-success text-primary">Википедия</a></li>
-            <li class="foot-menu-item mbr-fonts-style display-7"><a href="index.html#content1-8" class="text-success text-primary">Жаба</a></li>
-          </ul>
-        </div>
-        <div class="row row-copirayt">
-          <p class="mbr-text mb-0 mbr-fonts-style mbr-white align-center display-7">SwordLand.</p>
         </div>
       </div>
     </div>
