@@ -1,0 +1,625 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+  <meta name="description" content="SwordLand - официальный сайт сервера SwordLand, включающий вики и много чего еще.">
+  <meta name="keywords" content="SwordLand, Sword Land, SL wiki, minecraft server, Minecraft wiki, bepismine, Starik1917, лор майнкрафт, вики сервер, сезоны, Сворд ленд, SL">
+  <meta name="author" content="SwordLand Community">
+  <meta name="robots" content="index, follow">
+  <link rel="shortcut icon" href="assets/images/-121x121.png" type="image/x-icon">
+  <title>Per4anskiyPer4ik — SwordLand Wiki</title>
+
+  <link rel="stylesheet" href="assets/tether/tether.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-grid.min.css">
+  <link rel="stylesheet" href="assets/bootstrap/css/bootstrap-reboot.min.css">
+  <link rel="stylesheet" href="assets/dropdown/css/style.css">
+  <link rel="stylesheet" href="assets/socicon/css/styles.css">
+  <link rel="stylesheet" href="assets/theme/css/style.css">
+  <link rel="stylesheet" href="assets/mobirise/css/mbr-additional.css" type="text/css">
+
+  <style>
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @font-face {
+        font-family: 'Minecraft';
+        src: local('Minecraft'), local('Minecraftia'),
+             url('https://fonts.cdnfonts.com/s/18238/Minecraftia-Regular.woff') format('woff');
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+        margin: 0;
+        font-family: 'Minecraft', monospace;
+        color: #eaeaea;
+        background:
+            linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+            url("quanto.jpg") center / cover no-repeat fixed;
+    }
+
+    .header {
+        text-align: center;
+        padding: 15px 10px 5px;
+        font-size: 28px;
+        text-shadow: 2px 2px 0 #000;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: auto;
+        padding: 20px;
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .card {
+        width: 320px;
+        background: #1b1b1b;
+        border: 4px solid #3a3a3a;
+        box-shadow: 0 0 0 4px #000 inset;
+        padding: 15px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .card.appear {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .content {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .skin-box {
+        text-align: center;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        margin-bottom: 15px;
+        padding: 10px 0;
+    }
+    .skin-switch {
+        margin-bottom: 12px;
+    }
+    .skin-switch button {
+        padding: 4px 10px;
+        font-size: 13px;
+        background: #2a2a2a;
+        border: 2px solid #111;
+        color: #eaeaea;
+        cursor: pointer;
+        margin: 0 3px;
+        transition: background 0.22s ease, border-color 0.22s ease, color 0.22s ease, transform 0.16s ease, box-shadow 0.22s ease;
+    }
+    .skin-switch button:hover {
+        background: #3a4a3a;
+        border-color: #5bbd5b;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(91, 189, 91, 0.22);
+    }
+    .skin-switch button:active {
+        transform: translateY(0);
+    }
+    .skin-switch button.active {
+        background: #3f613f;
+        border-color: #5bbd5b;
+        color: #ffffff;
+        box-shadow: inset 0 0 0 1px rgba(91, 189, 91, 0.25);
+    }
+
+    .skin-images-container {
+        position: relative;
+        width: 112px;
+        height: 212px;
+    }
+
+    .skin-images-container img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 112px;
+        height: 212px;
+        image-rendering: pixelated;
+        border: 3px solid #555;
+        background: #111;
+        opacity: 0;
+        transition: opacity 0.4s ease-in-out;
+    }
+
+    .skin-images-container img.active {
+        opacity: 1;
+    }
+
+    .info p {
+        margin: 6px 0;
+    }
+    .block {
+        margin-bottom: 12px;
+        background: #1a1a1a;
+        border: none;
+        border-radius: 0;
+        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    .block.appear {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .block h3 {
+        margin: 0;
+        padding: 10px;
+        cursor: pointer;
+        background: #2a2a2a;
+        color: #eaeaea;
+        transition: background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        user-select: none;
+    }
+    .block h3:hover,
+    .block h3:focus-visible {
+        background: #354635;
+        color: #ffffff;
+        box-shadow: inset 0 0 0 1px rgba(91, 189, 91, 0.35);
+        outline: none;
+    }
+
+    .block-arrow {
+        display: inline-flex;
+        width: 1em;
+        flex: 0 0 1em;
+        transform: rotate(0deg);
+        transform-origin: 50% 52%;
+        transition: transform 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .block.open .block-arrow {
+        transform: rotate(90deg);
+    }
+
+    .block .inside {
+        height: 0;
+        line-height: 1.5;
+        opacity: 0;
+        overflow: hidden;
+        transition: height 0.46s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s ease;
+        will-change: height, opacity;
+    }
+
+    .block .inside-content {
+        overflow: hidden;
+        padding: 10px;
+        transform: translateY(-5px);
+        transition: transform 0.46s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .block.open .inside {
+        opacity: 1;
+    }
+
+    .block.open .inside-content {
+        transform: translateY(0);
+    }
+
+    @media(max-width:800px) {
+        .container {
+            flex-direction: column;
+            padding: 15px;
+        }
+        .card {
+            width: 100%;
+        }
+        .skin-box {
+            height: auto;
+            min-height: 200px;
+            padding-bottom: 15px;
+        }
+    }
+
+    .navbar {
+        background-color: #2a2a2a !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .navbar-brand,
+    .navbar-nav .nav-link,
+    .dropdown-item {
+        color: #eaeaea !important;
+    }
+
+    .navbar-nav .nav-link:hover,
+    .dropdown-item:hover {
+        color: #fff !important;
+        background-color: #333 !important;
+    }
+
+    .dropdown-menu {
+        background-color: #2a2a2a !important;
+        border: 1px solid #444 !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.4) !important;
+    }
+
+    .dropdown-menu .dropdown-item {
+        color: #eaeaea !important;
+        background-color: #2a2a2a !important;
+    }
+
+    .navbar-toggler {
+        border-color: #555 !important;
+    }
+
+    .hamburger span {
+        background: #eaeaea !important;
+    }
+   @media (max-width: 991.98px) {
+        .navbar-collapse {
+            background-color: #2a2a2a !important;
+            padding: 10px 0 !important;
+            border-top: 1px solid #444 !important;
+        }
+
+        .navbar-nav,
+        .nav-dropdown,
+        .nav-right {
+            background-color: #2a2a2a !important;
+            flex-direction: column !important;
+            padding-left: 0 !important;
+            margin: 0 !important;
+        }
+
+        .navbar-nav .nav-item,
+        .nav-dropdown .nav-item {
+            width: 100% !important;
+        }
+
+        .navbar-nav .nav-link,
+        .nav-dropdown .nav-link,
+        .nav-dropdown .dropdown-toggle {
+            padding: 10px 20px !important;
+            display: block !important;
+            color: #eaeaea !important;
+            background-color: transparent !important;
+        }
+
+        .dropdown-menu {
+            background-color: #2a2a2a !important;
+            position: static !important;
+            float: none !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        .dropdown-menu .dropdown-item {
+            padding: 10px 40px !important;
+            color: #eaeaea !important;
+            background-color: #2a2a2a !important;
+        }
+
+        .nav-dropdown .nav-item .nav-link,
+        .nav-right .nav-item .nav-link {
+            color: #eaeaea !important;
+            background: transparent !important;
+        }
+
+        .nav-dropdown .nav-item .nav-link:hover,
+        .nav-right .nav-item .nav-link:hover {
+            background-color: #333 !important;
+        }
+
+        .nav-dropdown .dropdown-menu,
+        .nav-right .dropdown-menu {
+            background-color: #2a2a2a !important;
+        }
+
+        .nav-dropdown .dropdown-menu .dropdown-item,
+        .nav-right .dropdown-menu .dropdown-item {
+            color: #eaeaea !important;
+        }
+    }
+    
+  a {
+    color: #3FAF3F;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+  </style>
+</head>
+
+<body>
+
+  <section class="menu cid-s48OLK6784" once="menu" id="menu1-h">
+    <nav class="navbar navbar-dropdown navbar-fixed-top navbar-expand-lg">
+        <div class="container-fluid">
+            <div class="navbar-brand">
+                <span class="navbar-logo">
+                    <a href="index.html">
+                        <img src="assets/images/-121x121.png" alt="SwordLand" style="height: 3.8rem; filter: invert(1) saturate(0) brightness(150%);">
+                    </a>
+                </span>
+                <span class="navbar-caption-wrap">
+                    <a class="navbar-caption display-7" href="index.html">SwordLand</a>
+                </span>
+            </div>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav nav-dropdown nav-right" data-app-modern-menu="true">
+                    <li class="nav-item">
+                        <a class="nav-link link display-4" href="players.html">Игроки</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link link dropdown-toggle display-4" href="#" data-toggle="dropdown-submenu">
+                            Сезоны
+                        </a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item display-4" href="SL1.html">SwordLand 1</a>
+                            <a class="dropdown-item display-4" href="SL2.html">SwordLand 2</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+  </section>
+
+  <div class="header">Per4anskiyPer4ik</div>
+
+  <div class="container">
+    <div class="card fade-in" style="--delay: 0.2s" id="playerCard">
+      <div class="skin-box">
+        <div class="skin-switch" id="skinButtons"></div>
+        <div class="skin-images-container" id="skinImagesContainer"></div>
+      </div>
+
+      <hr>
+
+      <div class="info">
+        <p><b>Ник:</b> Per4anskiyPer4ik</p>
+        <p><b>Сезоны:</b> </p>
+        <p><b>Коалиции:</b><br></p>
+        <p><b>Статус:</b> </p>
+      </div>
+
+      <div class="block fade-in" style="--delay: 0.3s">
+        <h3>▶ Личная информация</h3>
+        <div class="inside"></div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="block fade-in" style="--delay: 0.4s">
+        <h3>▶ Описание персонажа</h3>
+        <div class="inside"></div>
+      </div>
+
+      <div class="block fade-in" style="--delay: 0.5s">
+        <h3>▶ История попадания на сервер</h3>
+        <div class="inside"></div>
+      </div>
+
+      <div class="block fade-in" style="--delay: 0.6s">
+        <h3>▶ Лор игрока</h3>
+        <div class="inside"></div>
+      </div>
+
+      <div class="block fade-in" style="--delay: 0.7s">
+        <h3>▶ Постройки</h3>
+        <div class="inside"></div>
+      </div>
+
+      <div class="block fade-in" style="--delay: 0.8s">
+        <h3>▶ Дополнительно</h3>
+        <div class="inside"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts -->
+  <script src="assets/web/assets/jquery/jquery.min.js"></script>
+  <script src="assets/popper/popper.min.js"></script>
+  <script src="assets/tether/tether.min.js"></script>
+  <script src="assets/bootstrap/js/bootstrap.min.js"></script>
+  <script src="assets/dropdown/js/nav-dropdown.js"></script>
+  <script src="assets/dropdown/js/navbar-dropdown.js"></script>
+  <script src="assets/theme/js/script.js"></script>
+  <script src="assets/smoothscroll/smooth-scroll.js"></script>
+
+  <script>
+    const skins = [
+      { label: "Скин", src: "/assets/images/-882x882.png" }
+    ];
+    let currentSkinIndex = 0;
+
+    function initSkins() {
+      const buttonsContainer = document.getElementById("skinButtons");
+      const imagesContainer = document.getElementById("skinImagesContainer");
+
+      buttonsContainer.innerHTML = "";
+      imagesContainer.innerHTML = "";
+
+      skins.forEach((skin, index) => {
+        const button = document.createElement("button");
+        button.textContent = skin.label;
+        button.onclick = () => switchSkin(index);
+        if (index === 0) button.classList.add("active");
+        buttonsContainer.appendChild(button);
+
+        const img = document.createElement("img");
+        img.src = skin.src;
+        img.alt = "skin";
+        if (index === 0) img.classList.add("active");
+        imagesContainer.appendChild(img);
+      });
+    }
+
+    function switchSkin(index) {
+      if (index === currentSkinIndex) return;
+
+      const images = document.querySelectorAll("#skinImagesContainer img");
+      const buttons = document.querySelectorAll("#skinButtons button");
+
+      images[currentSkinIndex].classList.remove("active");
+      buttons[currentSkinIndex].classList.remove("active");
+
+      currentSkinIndex = index;
+
+      images[currentSkinIndex].classList.add("active");
+      buttons[currentSkinIndex].classList.add("active");
+    }
+        function initCollapsibles() {
+      const blocks = document.querySelectorAll('.block');
+
+      blocks.forEach(block => {
+        const header = block.querySelector('h3');
+        const inside = block.querySelector('.inside');
+        if (!header || !inside) return;
+
+        if (!header.querySelector('.block-arrow')) {
+          const titleText = header.textContent.replace(/^\s*[▶▸►]\s*/, '').trim();
+          header.textContent = '';
+
+          const arrow = document.createElement('span');
+          arrow.className = 'block-arrow';
+          arrow.setAttribute('aria-hidden', 'true');
+          arrow.textContent = '▸';
+
+          const title = document.createElement('span');
+          title.className = 'block-title';
+          title.textContent = titleText;
+
+          header.appendChild(arrow);
+          header.appendChild(title);
+        }
+
+        if (!inside.querySelector('.inside-content')) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'inside-content';
+          while (inside.firstChild) {
+            wrapper.appendChild(inside.firstChild);
+          }
+          inside.appendChild(wrapper);
+        }
+
+        inside.style.height = '0px';
+
+        const openBlock = () => {
+          block.classList.add('open');
+          inside.style.height = inside.scrollHeight + 'px';
+        };
+
+        const closeBlock = () => {
+          if (inside.style.height === 'auto') {
+            inside.style.height = inside.scrollHeight + 'px';
+          }
+          requestAnimationFrame(() => {
+            inside.style.height = '0px';
+          });
+          block.classList.remove('open');
+        };
+
+        inside.addEventListener('transitionend', event => {
+          if (event.propertyName !== 'height') return;
+          if (block.classList.contains('open')) {
+            inside.style.height = 'auto';
+          }
+        });
+
+        header.addEventListener('click', () => {
+          if (block.classList.contains('open')) {
+            closeBlock();
+          } else {
+            openBlock();
+          }
+        });
+      });
+
+      window.addEventListener('resize', () => {
+        document.querySelectorAll('.block.open .inside').forEach(inside => {
+          inside.style.height = 'auto';
+        });
+      });
+    }
+function animateBlocks() {
+      const blocks = document.querySelectorAll('.fade-in');
+      blocks.forEach(block => {
+        const delay = parseFloat(block.style.getPropertyValue('--delay')) || 0;
+        setTimeout(() => block.classList.add('appear'), delay * 1000);
+      });
+    }
+
+    window.addEventListener('load', () => {
+      initSkins();
+      initCollapsibles();
+      animateBlocks();
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const navbarCollapse = document.getElementById('navbarSupportedContent');
+      const toggler = document.querySelector('.navbar-toggler');
+
+      if (navbarCollapse && toggler) {
+        toggler.addEventListener('click', function() {
+          setTimeout(() => {
+            navbarCollapse.style.backgroundColor = '#2a2a2a';
+            navbarCollapse.style.borderTop = '1px solid #444';
+            navbarCollapse.style.padding = '10px 0';
+
+            const links = navbarCollapse.querySelectorAll('a');
+            links.forEach(link => {
+              link.style.color = '#eaeaea';
+            });
+
+            const dropdowns = navbarCollapse.querySelectorAll('.dropdown-menu');
+            dropdowns.forEach(menu => {
+              menu.style.backgroundColor = '#2a2a2a';
+              menu.style.border = '1px solid #444';
+              const items = menu.querySelectorAll('.dropdown-item');
+              items.forEach(item => {
+                item.style.color = '#eaeaea';
+                item.style.backgroundColor = '#2a2a2a';
+              });
+            });
+          }, 10);
+        });
+      }
+    });
+  </script>
+<script src="assets/smoothscroll/smooth-scroll.js"></script>
+</body>
+</html>
+
+
+
+
+
