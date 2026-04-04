@@ -12,24 +12,70 @@
   <link rel="shortcut icon" href="assets/images/-121x121.png" type="image/x-icon">
   <meta name="description" content="">
   <style>
-    
-.nav-frame {
-    border: 5px solid #3a3a3a;
-    box-shadow: 
-        0 0 0 3px #000 inset,
-        0 4px 10px rgba(0,0,0,0.6);
-    background: #111;
-    padding: 6px;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
+    .main-nav-grid {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(170px, 1fr));
+      gap: 18px;
+    }
 
-.nav-frame:hover {
-    transform: scale(1.03);
-    box-shadow: 
-        0 0 0 3px #000 inset,
-        0 8px 16px rgba(0,0,0,0.8);
-}
-</style>
+    .main-nav-btn {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 8px;
+      min-height: 150px;
+      padding: 20px;
+      color: #eaeaea;
+      text-decoration: none !important;
+      border: 3px solid #3a3a3a;
+      box-shadow: 0 0 0 2px #000 inset, 0 8px 18px rgba(0, 0, 0, 0.5);
+      background: linear-gradient(145deg, #1b1b1b 0%, #242424 100%);
+      transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
+    }
+
+    .main-nav-btn:hover {
+      color: #ffffff;
+      transform: translateY(-4px);
+      border-color: #5bbd5b;
+      background: linear-gradient(145deg, #202720 0%, #273327 100%);
+      box-shadow: 0 0 0 2px #111 inset, 0 14px 22px rgba(0, 0, 0, 0.6);
+    }
+
+    .main-nav-title {
+      display: block;
+      font-size: 1.45rem;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .main-nav-subtitle {
+      display: block;
+      font-size: 0.95rem;
+      line-height: 1.4;
+      color: rgba(234, 234, 234, 0.84);
+    }
+
+    @media (max-width: 991.98px) {
+      .main-nav-grid {
+        grid-template-columns: repeat(2, minmax(170px, 1fr));
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .main-nav-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .main-nav-btn {
+        min-height: 128px;
+      }
+    }
+  </style>
   
   <title>SwordLand</title>
   <link rel="stylesheet" href="assets/tether/tether.min.css">
@@ -91,7 +137,7 @@
                 <h1 class="mbr-section-title mbr-fonts-style mb-3 display-1"><strong>SwordLand</strong></h1>
                 
                 <p class="mbr-text mbr-fonts-style display-7">Сервер друзей</p>
-                <div class="mbr-section-btn mt-3"><a class="btn btn-success display-4" href="index.html#image3-9" class="no-highlight">О сервере</a> <a class="btn btn-success-outline display-4" href="index.html#bottom" class="no-highlight">Навигация</a></div>
+                <div class="mbr-section-btn mt-3"><a class="btn btn-success display-4" href="index.html#image3-9" class="no-highlight">О сервере</a> <a class="btn btn-success-outline display-4" href="index.html#content1-d" class="no-highlight">Навигация</a></div>
             </div>
         </div>
     </div>
@@ -162,33 +208,28 @@
                     <strong>Навигация</strong>
                 </h3>
             </div>
+            <div class="col-12">
+                <div class="main-nav-grid">
+                    <a class="main-nav-btn" href="players.html">
+                        <span class="main-nav-title">Игроки</span>
+                        <span class="main-nav-subtitle">Личные страницы участников</span>
+                    </a>
 
-            <!-- Карточка: Игроки -->
-            <!-- Карточка: Игроки -->
-<div class="col-md-4 col-sm-6 mb-4 text-center">
-    <a href="players.html" style="text-decoration:none; display: block;">
-        <div class="nav-frame" style="margin: 0 auto; width: 100px; height: 100px;">
-            <img src="assets/images/nav_players.png" class="img-fluid"
-                style="border-radius:8px; width: 100%; height: 100%; object-fit: cover;">
-        </div>
-        <p class="mbr-fonts-style mt-2 display-5">Игроки</p>
-    </a>
-</div>
+                    <a class="main-nav-btn" href="organizations.html">
+                        <span class="main-nav-title">Организации</span>
+                        <span class="main-nav-subtitle">Кланы, союзы и объединения</span>
+                    </a>
 
-            <!-- Карточка: Постройки -->
-            <div class="col-md-4 col-sm-6 mb-4 text-center">
-                <a href="builds.html" style="text-decoration:none;">
-                    <img src="assets/images/nav_builds.png" class="img-fluid" style="border-radius:8px;">
-                    <p class="mbr-fonts-style mt-2 display-5">Постройки</p>
-                </a>
-            </div>
+                    <a class="main-nav-btn" href="builds.html">
+                        <span class="main-nav-title">Постройки</span>
+                        <span class="main-nav-subtitle">Главные базы и проекты</span>
+                    </a>
 
-            <!-- Карточка: События -->
-            <div class="col-md-4 col-sm-6 mb-4 text-center">
-                <a href="events.html" style="text-decoration:none;">
-                    <img src="assets/images/nav_events.png" class="img-fluid" style="border-radius:8px;">
-                    <p class="mbr-fonts-style mt-2 display-5">События</p>
-                </a>
+                    <a class="main-nav-btn" href="lore.html">
+                        <span class="main-nav-title">Лор</span>
+                        <span class="main-nav-subtitle">История мира SwordLand</span>
+                    </a>
+                </div>
             </div>
 
         </div>
