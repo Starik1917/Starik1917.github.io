@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -153,30 +153,56 @@
         opacity: 1;
         transform: translateY(0);
     }
-
     .block h3 {
         margin: 0;
         padding: 10px;
         cursor: pointer;
         background: #2a2a2a;
         transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        user-select: none;
     }
     .block h3:hover {
         background: #333;
     }
 
+    .block-arrow {
+        display: inline-flex;
+        width: 1em;
+        flex: 0 0 1em;
+        transform: rotate(0deg);
+        transform-origin: 50% 52%;
+        transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .block.open .block-arrow {
+        transform: rotate(90deg);
+    }
+
     .block .inside {
-        padding: 0 10px;
+        display: grid;
+        grid-template-rows: 0fr;
         line-height: 1.5;
-        max-height: 0;
         opacity: 0;
-        transition: max-height 0.35s ease, opacity 0.35s ease, padding 0.35s ease;
+        transition: grid-template-rows 0.42s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+    }
+
+    .block .inside-content {
+        overflow: hidden;
+        padding: 10px;
+        transform: translateY(-3px);
+        transition: transform 0.3s ease;
     }
 
     .block.open .inside {
-        padding: 10px 10px;
+        grid-template-rows: 1fr;
         opacity: 1;
-        max-height: 600px;
+    }
+
+    .block.open .inside-content {
+        transform: translateY(0);
     }
 
     @media(max-width:800px) {
@@ -471,14 +497,46 @@
       images[currentSkinIndex].classList.add("active");
       buttons[currentSkinIndex].classList.add("active");
     }
+    function initCollapsibles() {
+      const blocks = document.querySelectorAll('.block');
 
-    document.querySelectorAll(".block h3").forEach(h => {
-      h.addEventListener("click", () => {
-        h.parentElement.classList.toggle("open");
+      blocks.forEach(block => {
+        const header = block.querySelector('h3');
+        const inside = block.querySelector('.inside');
+        if (!header || !inside) return;
+
+        if (!header.querySelector('.block-arrow')) {
+          const titleText = header.textContent.replace(/^\s*[▶▸►]\s*/, '').trim();
+          header.textContent = '';
+
+          const arrow = document.createElement('span');
+          arrow.className = 'block-arrow';
+          arrow.setAttribute('aria-hidden', 'true');
+          arrow.textContent = '▸';
+
+          const title = document.createElement('span');
+          title.className = 'block-title';
+          title.textContent = titleText;
+
+          header.appendChild(arrow);
+          header.appendChild(title);
+        }
+
+        if (!inside.querySelector('.inside-content')) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'inside-content';
+          while (inside.firstChild) {
+            wrapper.appendChild(inside.firstChild);
+          }
+          inside.appendChild(wrapper);
+        }
+
+        header.addEventListener('click', () => {
+          block.classList.toggle('open');
+        });
       });
-    });
-
-    function animateBlocks() {
+    }
+function animateBlocks() {
       const blocks = document.querySelectorAll('.fade-in');
       blocks.forEach(block => {
         const delay = parseFloat(block.style.getPropertyValue('--delay')) || 0;
@@ -488,6 +546,7 @@
 
     window.addEventListener('load', () => {
       initSkins();
+      initCollapsibles();
       animateBlocks();
     });
 
@@ -525,3 +584,4 @@
 <script src="assets/smoothscroll/smooth-scroll.js"></script>
 </body>
 </html>
+
