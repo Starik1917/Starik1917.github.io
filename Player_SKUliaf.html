@@ -520,14 +520,16 @@
     }
         function initCollapsibles() {
       const blocks = document.querySelectorAll('.block');
+      const blockTitles = ['Основная информация', 'История', 'Лор персонажа', 'Постройки', 'Дополнительная информация'];
 
-      blocks.forEach(block => {
+      blocks.forEach((block, index) => {
         const header = block.querySelector('h3');
         const inside = block.querySelector('.inside');
         if (!header || !inside) return;
 
         if (!header.querySelector('.block-arrow')) {
-          const titleText = header.textContent.replace(/^\s*[в–¶в–ёв–є]\s*/, '').trim();
+          const fallbackTitle = header.textContent.replace(/^\s*[^A-Za-zА-Яа-яЁё0-9]+\s*/, '').trim();
+          const titleText = blockTitles[index] || blockTitles[blockTitles.length - 1] || fallbackTitle;
           header.textContent = '';
 
           const arrow = document.createElement('span');
@@ -583,6 +585,10 @@
             openBlock();
           }
         });
+
+        if (index < 2) {
+          openBlock();
+        }
       });
 
       window.addEventListener('resize', () => {
@@ -640,6 +646,8 @@ function animateBlocks() {
   <script src="assets/theme/js/theme-toggle.js"></script>
 </body>
 </html>
+
+
 
 
 
