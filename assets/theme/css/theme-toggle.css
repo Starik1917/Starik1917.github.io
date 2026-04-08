@@ -241,6 +241,19 @@ body.page-general[data-theme="dark"] section:nth-of-type(2n):not(.header1):not(.
   background-color: #222a2f !important;
 }
 
+body.page-general[data-theme="dark"] .cid-uAVeB8GZLN {
+  background-image: url("../../../assets/images/players-dark-theme-bg.jpg") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+body.page-general[data-theme="dark"] .cid-uAVeB8GZLN .mbr-overlay {
+  background: linear-gradient(160deg, rgba(4, 6, 10, 0.84), rgba(6, 8, 12, 0.94)) !important;
+  opacity: 1 !important;
+}
+
 body.page-general[data-theme="dark"] .navbar,
 body.page-general[data-theme="dark"] .navbar-dropdown {
   background-color: #2a3136 !important;
@@ -533,5 +546,9 @@ body.page-general .cid-404-hero .btn-black:focus {
   .theme-switcher-btn {
     font-size: 11px;
     padding: 5px 8px;
+  }
+
+  body.page-general[data-theme="dark"] .cid-uAVeB8GZLN {
+    background-attachment: scroll !important;
   }
 }
