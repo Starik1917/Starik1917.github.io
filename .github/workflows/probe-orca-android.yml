@@ -1,4 +1,4 @@
-name: Probe OrcaSlicer Android port
+name: Build native OrcaSlicer Android core
 
 on:
   push:
@@ -13,9 +13,9 @@ permissions:
   contents: read
 
 jobs:
-  probe:
+  native-core:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
 
     steps:
       - name: Checkout Model Lab
@@ -37,7 +37,7 @@ jobs:
           sdkmanager "ndk;27.2.12479018" "cmake;3.31.1" "platforms;android-35" "build-tools;35.0.0"
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> "$GITHUB_ENV"
 
-      - name: Fetch pinned OrcaSlicer build files
+      - name: Fetch pinned OrcaSlicer source
         shell: bash
         run: |
           set -euo pipefail
@@ -46,7 +46,7 @@ jobs:
           git init
           git remote add origin https://github.com/OrcaSlicer/OrcaSlicer.git
           git sparse-checkout init --cone
-          git sparse-checkout set deps cmake deps_src
+          git sparse-checkout set deps cmake deps_src src/libslic3r
           git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46"
@@ -57,14 +57,14 @@ jobs:
           path: orca/deps/DL_CACHE
           key: orca-dependency-downloads-e1c0ea0-v1
 
-      - name: Remove desktop-only dependencies from Android graph
+      - name: Prepare Orca dependency graph for Android
         shell: bash
         run: |
           set -euo pipefail
           python3 model-lab-v4/patches/patch_orca_deps_android.py orca
 
       - name: Configure upstream dependencies for Android
-        id: configure
+        id: configure_deps
         continue-on-error: true
         shell: bash
         run: |
@@ -83,51 +83,32 @@ jobs:
             > /tmp/orca-configure.log 2>&1
           tail -n 120 /tmp/orca-configure.log
 
-      - name: Upload configure diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: orca-android-configure-log
-          path: /tmp/orca-configure.log
-          if-no-files-found: warn
-          retention-days: 3
-
-      - name: Fail if upstream configure failed
-        if: steps.configure.outcome == 'failure'
-        shell: bash
-        run: |
-          echo "Upstream Orca dependency configuration is not Android-ready yet."
-          exit 1
-
       - name: List Android dependency targets
-        if: steps.configure.outcome == 'success'
+        if: steps.configure_deps.outcome == 'success'
         shell: bash
         run: ninja -C build/orca-deps -t targets all > /tmp/orca-targets.txt
 
-      - name: Build first native dependency set
+      - name: Build foundational dependencies
         id: dependency_build_1
-        if: steps.configure.outcome == 'success'
+        if: steps.configure_deps.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
           : > /tmp/orca-dependencies-stage1.log
-          built=0
           for target in dep_ZLIB dep_EXPAT dep_Eigen dep_Cereal dep_TBB dep_Boost; do
             if grep -q "^${target}:" /tmp/orca-targets.txt; then
               echo "===== Building ${target} =====" | tee -a /tmp/orca-dependencies-stage1.log
               "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-deps \
                 --target "$target" --parallel 2 \
                 >> /tmp/orca-dependencies-stage1.log 2>&1
-              built=$((built + 1))
             else
-              echo "===== ${target} is provided by the toolchain or omitted =====" | tee -a /tmp/orca-dependencies-stage1.log
+              echo "===== ${target} is provided or omitted =====" | tee -a /tmp/orca-dependencies-stage1.log
             fi
           done
-          echo "External targets built: ${built}" | tee -a /tmp/orca-dependencies-stage1.log
-          tail -n 160 /tmp/orca-dependencies-stage1.log
+          tail -n 180 /tmp/orca-dependencies-stage1.log
 
-      - name: Build geometry and runtime dependencies
+      - name: Build geometry and G-code dependencies
         id: dependency_build_2
         if: steps.dependency_build_1.outcome == 'success'
         continue-on-error: true
@@ -135,44 +116,116 @@ jobs:
         run: |
           set -euo pipefail
           : > /tmp/orca-dependencies-stage2.log
-          built=0
           for target in dep_PNG dep_Qhull dep_GMP dep_MPFR dep_CGAL dep_NLopt dep_libnoise dep_OpenSSL dep_JPEG dep_Draco; do
             if grep -q "^${target}:" /tmp/orca-targets.txt; then
               echo "===== Building ${target} =====" | tee -a /tmp/orca-dependencies-stage2.log
               "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-deps \
                 --target "$target" --parallel 2 \
                 >> /tmp/orca-dependencies-stage2.log 2>&1
-              built=$((built + 1))
             else
-              echo "===== ${target} is provided by the toolchain or omitted =====" | tee -a /tmp/orca-dependencies-stage2.log
+              echo "===== ${target} is provided or omitted =====" | tee -a /tmp/orca-dependencies-stage2.log
             fi
           done
-          echo "External targets built: ${built}" | tee -a /tmp/orca-dependencies-stage2.log
-          tail -n 220 /tmp/orca-dependencies-stage2.log
+          tail -n 240 /tmp/orca-dependencies-stage2.log
 
-      - name: Upload dependency build diagnostics
+      - name: Upload dependency diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: orca-android-dependency-log
           path: |
+            /tmp/orca-configure.log
             /tmp/orca-dependencies-stage1.log
             /tmp/orca-dependencies-stage2.log
             /tmp/orca-targets.txt
           if-no-files-found: warn
           retention-days: 3
 
-      - name: Fail if dependency build failed
-        if: steps.dependency_build_1.outcome == 'failure' || steps.dependency_build_2.outcome == 'failure'
+      - name: Stop on dependency failure
+        if: steps.configure_deps.outcome == 'failure' || steps.dependency_build_1.outcome == 'failure' || steps.dependency_build_2.outcome == 'failure'
         shell: bash
-        run: |
-          echo "At least one required Orca dependency is not Android-ready yet."
-          exit 1
+        run: exit 1
 
-      - name: Verify Android dependency output
+      - name: Patch pinned Orca sources for Android FDM core
         if: steps.dependency_build_2.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
-          find build/orca-prefix -type f \( -name '*.a' -o -name '*.so' -o -name '*.h' \) | sed -n '1,300p'
-          test "$(find build/orca-prefix -type f -name '*.a' | wc -l)" -gt 7
+          python3 model-lab-v4/patches/patch_orca_core_android.py orca
+          grep -q "Arachne/WallToolPaths.cpp" orca/src/libslic3r/CMakeLists.txt
+          grep -q "Support/TreeSupport.cpp" orca/src/libslic3r/CMakeLists.txt
+          grep -q "GCode.cpp" orca/src/libslic3r/CMakeLists.txt
+          ! grep -q "find_package(OpenCV" orca/src/libslic3r/CMakeLists.txt
+          ! grep -q "find_package(OpenCASCADE" orca/src/libslic3r/CMakeLists.txt
+
+      - name: Configure native libslic3r bridge
+        id: configure_core
+        if: steps.dependency_build_2.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" \
+            -S model-lab-v4/native \
+            -B build/orca-native \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-26 \
+            -DANDROID_STL=c++_static \
+            -DORCA_SOURCE_DIR="$GITHUB_WORKSPACE/orca" \
+            -DORCA_DEP_PREFIX="$GITHUB_WORKSPACE/build/orca-prefix/usr/local" \
+            > /tmp/orca-core-configure.log 2>&1
+          tail -n 220 /tmp/orca-core-configure.log
+
+      - name: Build native libslic3r bridge
+        id: build_core
+        if: steps.configure_core.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-native \
+            --target model_lab_orca --parallel 2 \
+            > /tmp/orca-core-build.log 2>&1
+          tail -n 260 /tmp/orca-core-build.log
+
+      - name: Upload native core diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-android-core-log
+          path: |
+            /tmp/orca-core-configure.log
+            /tmp/orca-core-build.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Stop on native core failure
+        if: steps.configure_core.outcome == 'failure' || steps.build_core.outcome == 'failure'
+        shell: bash
+        run: exit 1
+
+      - name: Verify native library
+        if: steps.build_core.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          LIB="$(find build/orca-native -name 'libmodel_lab_orca.so' -type f -print -quit)"
+          test -n "$LIB"
+          file "$LIB"
+          llvm-readelf -d "$LIB" | tee /tmp/orca-native-readelf.txt
+          cp "$LIB" libmodel_lab_orca-arm64-v8a.so
+          sha256sum libmodel_lab_orca-arm64-v8a.so
+
+      - name: Upload native Orca library
+        if: steps.build_core.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-lab-orca-native-arm64
+          path: |
+            libmodel_lab_orca-arm64-v8a.so
+            /tmp/orca-native-readelf.txt
+          if-no-files-found: error
+          retention-days: 7
