@@ -1,0 +1,5 @@
+repository=https://github.com/OrcaSlicer/OrcaSlicer.git
+commit=e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46
+license=AGPL-3.0
+core=src/libslic3r
+abi=arm64-v8a
