@@ -15,7 +15,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - name: Checkout Model Lab
@@ -50,6 +50,12 @@ jobs:
           git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46"
+
+      - name: Restore Orca source download cache
+        uses: actions/cache@v4
+        with:
+          path: orca/deps/DL_CACHE
+          key: orca-dependency-downloads-e1c0ea0-v1
 
       - name: Remove desktop-only dependencies from Android graph
         shell: bash
@@ -92,29 +98,56 @@ jobs:
           echo "Upstream Orca dependency configuration is not Android-ready yet."
           exit 1
 
+      - name: List Android dependency targets
+        if: steps.configure.outcome == 'success'
+        shell: bash
+        run: ninja -C build/orca-deps -t targets all > /tmp/orca-targets.txt
+
       - name: Build first native dependency set
-        id: dependency_build
+        id: dependency_build_1
         if: steps.configure.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
-          ninja -C build/orca-deps -t targets all > /tmp/orca-targets.txt
-          : > /tmp/orca-dependencies.log
+          : > /tmp/orca-dependencies-stage1.log
           built=0
           for target in dep_ZLIB dep_EXPAT dep_Eigen dep_Cereal dep_TBB dep_Boost; do
             if grep -q "^${target}:" /tmp/orca-targets.txt; then
-              echo "===== Building ${target} =====" | tee -a /tmp/orca-dependencies.log
+              echo "===== Building ${target} =====" | tee -a /tmp/orca-dependencies-stage1.log
               "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-deps \
                 --target "$target" --parallel 2 \
-                >> /tmp/orca-dependencies.log 2>&1
+                >> /tmp/orca-dependencies-stage1.log 2>&1
               built=$((built + 1))
             else
-              echo "===== ${target} is provided by the configured toolchain or omitted =====" | tee -a /tmp/orca-dependencies.log
+              echo "===== ${target} is provided by the toolchain or omitted =====" | tee -a /tmp/orca-dependencies-stage1.log
             fi
           done
-          echo "External targets built: ${built}" | tee -a /tmp/orca-dependencies.log
-          tail -n 180 /tmp/orca-dependencies.log
+          echo "External targets built: ${built}" | tee -a /tmp/orca-dependencies-stage1.log
+          tail -n 160 /tmp/orca-dependencies-stage1.log
+
+      - name: Build geometry and runtime dependencies
+        id: dependency_build_2
+        if: steps.dependency_build_1.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > /tmp/orca-dependencies-stage2.log
+          built=0
+          for target in dep_PNG dep_Qhull dep_GMP dep_MPFR dep_CGAL dep_NLopt dep_libnoise dep_OpenSSL dep_JPEG; do
+            if grep -q "^${target}:" /tmp/orca-targets.txt; then
+              echo "===== Building ${target} =====" | tee -a /tmp/orca-dependencies-stage2.log
+              "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-deps \
+                --target "$target" --parallel 2 \
+                >> /tmp/orca-dependencies-stage2.log 2>&1
+              built=$((built + 1))
+            else
+              echo "===== ${target} is provided by the toolchain or omitted =====" | tee -a /tmp/orca-dependencies-stage2.log
+            fi
+          done
+          echo "External targets built: ${built}" | tee -a /tmp/orca-dependencies-stage2.log
+          tail -n 200 /tmp/orca-dependencies-stage2.log
 
       - name: Upload dependency build diagnostics
         if: always()
@@ -122,22 +155,23 @@ jobs:
         with:
           name: orca-android-dependency-log
           path: |
-            /tmp/orca-dependencies.log
+            /tmp/orca-dependencies-stage1.log
+            /tmp/orca-dependencies-stage2.log
             /tmp/orca-targets.txt
           if-no-files-found: warn
           retention-days: 3
 
       - name: Fail if dependency build failed
-        if: steps.dependency_build.outcome == 'failure'
+        if: steps.dependency_build_1.outcome == 'failure' || steps.dependency_build_2.outcome == 'failure'
         shell: bash
         run: |
           echo "At least one required Orca dependency is not Android-ready yet."
           exit 1
 
       - name: Verify Android dependency output
-        if: steps.dependency_build.outcome == 'success'
+        if: steps.dependency_build_2.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
-          find build/orca-prefix -type f \( -name '*.a' -o -name '*.so' -o -name '*.h' \) | sed -n '1,240p'
-          test "$(find build/orca-prefix -type f -name '*.a' | wc -l)" -gt 0
+          find build/orca-prefix -type f \( -name '*.a' -o -name '*.so' -o -name '*.h' \) | sed -n '1,260p'
+          test "$(find build/orca-prefix -type f -name '*.a' | wc -l)" -gt 5
