@@ -1,0 +1,134 @@
+name: Build Model Lab 3D v3 preview2
+
+on:
+  push:
+    branches:
+      - build/model-lab-v3-preview2
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build-src
+          cp -a model-lab-v3/source build-src
+
+          # The preview1 patch is applied first because preview2 changes its generated UI.
+          sed -i 's/    if (onHome) {/  if (onHome) {/g' model-lab-v3/patch_v3_preview.py
+          python3 model-lab-v3/patch_v3_preview.py build-src
+
+          # Remove an obsolete generated-source version anchor from the preview2 patcher.
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('model-lab-v3/patch_v3_preview2.py')
+          text = path.read_text()
+          block = '''main = replace_once(
+              main,
+              "versionName '3.0.0-preview1'",
+              "versionName '3.0.0-preview2'",
+              "version name in generated source",
+          )
+
+          '''
+          if block not in text:
+              raise SystemExit('preview2 cleanup anchor not found')
+          path.write_text(text.replace(block, '', 1))
+          PY
+
+          python3 model-lab-v3/patch_v3_preview2.py build-src
+          node --check build-src/web/src/main.js
+          grep -q "previewDock" build-src/web/index.html
+          grep -q "exitSlicePreviewMode" build-src/web/src/main.js
+          grep -q "versionName '3.0.0-preview2'" build-src/app/build.gradle
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install web dependencies
+        working-directory: build-src
+        run: npm install --no-audit --no-fund
+
+      - name: Bundle offline application
+        working-directory: build-src
+        run: npm run build:web
+
+      - name: Verify bundled application
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build-src/app/src/main/assets/index.html
+          grep -q "previewDockPlayButton" build-src/app/src/main/assets/index.html
+          grep -q "previewCollapseButton" build-src/app/src/main/assets/index.html
+          grep -q "is-previewing" build-src/app/src/main/assets/index.html
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Build installable APK
+        working-directory: build-src
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build-src/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -t "$APK"
+          unzip -l "$APK" | grep -q "assets/index.html"
+          cp "$APK" ModelLab3D-v3.0-preview2.apk
+          sha256sum ModelLab3D-v3.0-preview2.apk
+
+      - name: Package source
+        shell: bash
+        run: |
+          rm -rf build-src/node_modules build-src/app/build
+          cd build-src
+          zip -qr ../ModelLab3D-v3.0-preview2-source.zip .
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v3.0-preview2-APK
+          path: ModelLab3D-v3.0-preview2.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload source
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v3.0-preview2-source
+          path: ModelLab3D-v3.0-preview2-source.zip
+          if-no-files-found: error
+          retention-days: 7
