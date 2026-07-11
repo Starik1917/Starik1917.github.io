@@ -92,8 +92,39 @@ jobs:
           echo "Upstream Orca dependency configuration is not Android-ready yet."
           exit 1
 
-      - name: List generated dependency targets
+      - name: Build first native dependency set
+        id: dependency_build
         if: steps.configure.outcome == 'success'
+        continue-on-error: true
         shell: bash
         run: |
-          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-deps --target help | sed -n '1,240p'
+          set -euo pipefail
+          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-deps \
+            --target dep_ZLIB dep_EXPAT dep_Eigen dep_Cereal dep_TBB dep_Boost \
+            --parallel 2 \
+            > /tmp/orca-dependencies.log 2>&1
+          tail -n 160 /tmp/orca-dependencies.log
+
+      - name: Upload dependency build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-android-dependency-log
+          path: /tmp/orca-dependencies.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Fail if dependency build failed
+        if: steps.dependency_build.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "At least one required Orca dependency is not Android-ready yet."
+          exit 1
+
+      - name: Verify Android dependency output
+        if: steps.dependency_build.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          find build/orca-prefix -type f \( -name '*.a' -o -name '*.so' -o -name '*.h' \) | sed -n '1,240p'
+          test "$(find build/orca-prefix -type f -name '*.a' | wc -l)" -gt 0
