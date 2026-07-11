@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" \
+          if ! "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" \
             -S orca/deps \
             -B build/orca-deps \
             -G Ninja \
@@ -60,7 +60,13 @@ jobs:
             -DANDROID_PLATFORM=android-26 \
             -DANDROID_STL=c++_static \
             -DDESTDIR="$GITHUB_WORKSPACE/build/orca-prefix" \
-            -DDEP_WX_GTK3=OFF
+            -DDEP_WX_GTK3=OFF \
+            > /tmp/orca-configure.log 2>&1; then
+            echo "===== Orca Android configure failure ====="
+            tail -n 180 /tmp/orca-configure.log
+            exit 1
+          fi
+          tail -n 80 /tmp/orca-configure.log
 
       - name: List generated dependency targets
         shell: bash
