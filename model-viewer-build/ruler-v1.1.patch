@@ -1,0 +1,530 @@
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -10,8 +10,8 @@
+         applicationId 'com.starik.modelviewer'
+         minSdk 23
+         targetSdk 34
+-        versionCode 1
+-        versionName '1.0.0'
++        versionCode 2
++        versionName '1.1.0'
+     }
+ 
+     buildTypes {
+--- a/package.json
++++ b/package.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "model-viewer-3d-android",
+   "private": true,
+-  "version": "1.0.0",
++  "version": "1.1.0",
+   "scripts": {
+     "build:web": "node scripts/build.mjs"
+   },
+--- a/web/index.html
++++ b/web/index.html
+@@ -64,6 +64,23 @@
+       <div class="gesture-hint" id="gestureHint" hidden>
+         Одним пальцем — вращение · двумя — масштаб и сдвиг
+       </div>
++
++      <button class="measure-fab" id="measureButton" aria-pressed="false" hidden>
++        <svg viewBox="0 0 24 24"><path d="M3 17.25 17.25 3 21 6.75 6.75 21 3 17.25Zm2.83.01.91.91 1.42-1.42-.91-.91 1.42-1.42 1.61 1.61 1.42-1.42-.91-.91 1.42-1.42 1.61 1.61 1.42-1.42-.91-.91 1.42-1.42.91.91 1.42-1.42-1.92-1.92L5.83 17.26Z"/></svg>
++        <span>Линейка</span>
++      </button>
++
++      <section class="measure-card" id="measureCard" hidden aria-live="polite">
++        <div class="measure-copy">
++          <span>Расстояние</span>
++          <strong id="measureValue">Коснись первой точки</strong>
++          <small id="measureDetail">Точки ставятся касанием поверхности модели</small>
++        </div>
++        <button class="measure-unit-button" id="measureUnitButton" title="Единица модели">Авто</button>
++        <button class="measure-clear-button" id="measureClearButton" aria-label="Очистить измерение" title="Очистить">
++          <svg viewBox="0 0 24 24"><path d="M7 21c-.55 0-1.02-.2-1.41-.59A1.93 1.93 0 0 1 5 19V6H4V4h5V3h6v1h5v2h-1v13c0 .55-.2 1.02-.59 1.41-.39.39-.86.59-1.41.59H7Zm10-15H7v13h10V6Zm-8 11h2V8H9v9Zm4 0h2V8h-2v9Z"/></svg>
++        </button>
++      </section>
+     </main>
+ 
+     <nav class="bottom-toolbar" id="bottomToolbar" aria-label="Инструменты просмотра">
+--- a/web/src/main.js
++++ b/web/src/main.js
+@@ -47,6 +47,12 @@
+   wireframeButton: document.querySelector('#wireframeButton'),
+   rotateButton: document.querySelector('#rotateButton'),
+   resetButton: document.querySelector('#resetButton'),
++  measureButton: document.querySelector('#measureButton'),
++  measureCard: document.querySelector('#measureCard'),
++  measureValue: document.querySelector('#measureValue'),
++  measureDetail: document.querySelector('#measureDetail'),
++  measureUnitButton: document.querySelector('#measureUnitButton'),
++  measureClearButton: document.querySelector('#measureClearButton'),
+   emptyState: document.querySelector('#emptyState'),
+   loadingCard: document.querySelector('#loadingCard'),
+   loadingTitle: document.querySelector('#loadingTitle'),
+@@ -85,6 +91,24 @@
+ let gridVisible = true;
+ let wireframeEnabled = false;
+ let autoRotateEnabled = false;
++let measureMode = false;
++let measurementGroup = null;
++let measurementPoints = [];
++let measurePointerStart = null;
++let measureUnitMode = 'auto';
++let modelNativeUnit = 'unit';
++
++const measureActivePointers = new Set();
++const measureRaycaster = new THREE.Raycaster();
++const measurePointer = new THREE.Vector2();
++const MEASURE_UNIT_OPTIONS = ['auto', 'mm', 'cm', 'm', 'in', 'unit'];
++const MEASURE_UNIT_LABELS = {
++  mm: 'мм',
++  cm: 'см',
++  m: 'м',
++  in: 'дюйм',
++  unit: 'ед.'
++};
+ 
+ const clock = new THREE.Clock();
+ 
+@@ -139,6 +163,11 @@
+   grid.material.depthWrite = false;
+   scene.add(grid);
+ 
++  measurementGroup = new THREE.Group();
++  measurementGroup.name = 'measurement-overlay';
++  scene.add(measurementGroup);
++
++  bindMeasurementPointerEvents();
+   updateSceneTheme();
+   resizeRenderer();
+   new ResizeObserver(resizeRenderer).observe(dom.viewerArea);
+@@ -206,6 +235,13 @@
+     fitCameraToBox(modelBox, false);
+   });
+ 
++  dom.measureButton.addEventListener('click', toggleMeasureMode);
++  dom.measureUnitButton.addEventListener('click', cycleMeasurementUnit);
++  dom.measureClearButton.addEventListener('click', () => {
++    clearMeasurement();
++    if (measureMode) showSnackbar('Измерение очищено');
++  });
++
+   document.addEventListener('visibilitychange', () => {
+     if (document.hidden) clock.stop();
+     else clock.start();
+@@ -526,6 +562,14 @@
+   setWireframe(modelRoot, wireframeEnabled);
+ 
+   const stats = collectStats(modelRoot);
++  modelNativeUnit = inferModelUnit(meta.extension);
++  measureUnitMode = 'auto';
++  measureMode = false;
++  setPressed(dom.measureButton, false);
++  dom.measureButton.hidden = false;
++  dom.measureCard.hidden = true;
++  updateMeasurementUi();
++
+   modelMeta = {
+     ...meta,
+     dimensions: size,
+@@ -613,6 +657,13 @@
+ }
+ 
+ function disposeCurrentModel() {
++  clearMeasurement();
++  measureMode = false;
++  modelNativeUnit = 'unit';
++  setPressed(dom.measureButton, false);
++  dom.measureButton.hidden = true;
++  dom.measureCard.hidden = true;
++
+   if (!modelRoot) return;
+ 
+   scene.remove(modelRoot);
+@@ -660,6 +711,231 @@
+   });
+ }
+ 
++function bindMeasurementPointerEvents() {
++  const canvas = renderer.domElement;
++
++  canvas.addEventListener('pointerdown', (event) => {
++    measureActivePointers.add(event.pointerId);
++
++    if (!measureMode || !modelRoot || (event.pointerType === 'mouse' && event.button !== 0)) {
++      measurePointerStart = null;
++      return;
++    }
++
++    if (measureActivePointers.size === 1) {
++      measurePointerStart = {
++        pointerId: event.pointerId,
++        x: event.clientX,
++        y: event.clientY,
++        time: performance.now()
++      };
++    } else {
++      measurePointerStart = null;
++    }
++  }, { passive: true });
++
++  canvas.addEventListener('pointerup', (event) => {
++    const wasSinglePointer = measureActivePointers.size === 1;
++    measureActivePointers.delete(event.pointerId);
++
++    if (!measureMode || !modelRoot || !measurePointerStart || !wasSinglePointer) {
++      measurePointerStart = null;
++      return;
++    }
++
++    const start = measurePointerStart;
++    measurePointerStart = null;
++    if (start.pointerId !== event.pointerId) return;
++
++    const movement = Math.hypot(event.clientX - start.x, event.clientY - start.y);
++    const duration = performance.now() - start.time;
++    if (movement > 11 || duration > 650) return;
++
++    pickMeasurementPoint(event.clientX, event.clientY);
++  }, { passive: true });
++
++  canvas.addEventListener('pointercancel', (event) => {
++    measureActivePointers.delete(event.pointerId);
++    if (measurePointerStart?.pointerId === event.pointerId) measurePointerStart = null;
++  }, { passive: true });
++}
++
++function toggleMeasureMode() {
++  if (!modelRoot) {
++    showSnackbar('Сначала открой модель');
++    return;
++  }
++
++  measureMode = !measureMode;
++  setPressed(dom.measureButton, measureMode);
++  updateMeasurementUi();
++
++  if (measureMode) {
++    showSnackbar(measurementPoints.length === 0
++      ? 'Линейка включена: коснись двух точек'
++      : 'Линейка включена');
++  }
++}
++
++function pickMeasurementPoint(clientX, clientY) {
++  const rect = renderer.domElement.getBoundingClientRect();
++  if (rect.width <= 0 || rect.height <= 0) return;
++
++  measurePointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
++  measurePointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
++  measureRaycaster.setFromCamera(measurePointer, camera);
++
++  const hit = measureRaycaster
++    .intersectObject(modelRoot, true)
++    .find((intersection) => intersection.object?.visible && (intersection.object.isMesh || intersection.object.isPoints));
++
++  if (!hit) {
++    showSnackbar('Коснись поверхности модели');
++    return;
++  }
++
++  if (measurementPoints.length >= 2) clearMeasurement(false);
++  measurementPoints.push(hit.point.clone());
++  rebuildMeasurementGraphics();
++  updateMeasurementUi();
++
++  if (measurementPoints.length === 1) {
++    showSnackbar('Первая точка поставлена. Выбери вторую');
++  }
++}
++
++function clearMeasurement(updateUi = true) {
++  measurementPoints = [];
++  clearMeasurementGraphics();
++  if (updateUi) updateMeasurementUi();
++}
++
++function clearMeasurementGraphics() {
++  if (!measurementGroup) return;
++
++  while (measurementGroup.children.length > 0) {
++    const object = measurementGroup.children[measurementGroup.children.length - 1];
++    measurementGroup.remove(object);
++    object.geometry?.dispose?.();
++    const materials = Array.isArray(object.material) ? object.material : [object.material];
++    for (const material of materials) material?.dispose?.();
++  }
++}
++
++function rebuildMeasurementGraphics() {
++  clearMeasurementGraphics();
++  if (!measurementGroup || measurementPoints.length === 0 || !modelBox) return;
++
++  const modelSize = modelBox.getSize(new THREE.Vector3());
++  const radius = Math.max(modelSize.length() * 0.008, 0.00001);
++  const color = measurementColor();
++
++  for (const point of measurementPoints) {
++    const marker = new THREE.Mesh(
++      new THREE.SphereGeometry(radius, 20, 12),
++      new THREE.MeshBasicMaterial({
++        color,
++        depthTest: false,
++        depthWrite: false
++      })
++    );
++    marker.position.copy(point);
++    marker.renderOrder = 1001;
++    measurementGroup.add(marker);
++  }
++
++  if (measurementPoints.length === 2) {
++    const geometry = new THREE.BufferGeometry().setFromPoints(measurementPoints);
++    const line = new THREE.Line(
++      geometry,
++      new THREE.LineBasicMaterial({
++        color,
++        transparent: true,
++        opacity: 0.96,
++        depthTest: false,
++        depthWrite: false
++      })
++    );
++    line.renderOrder = 1000;
++    measurementGroup.add(line);
++  }
++}
++
++function measurementColor() {
++  const cssColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
++  try {
++    return new THREE.Color(cssColor || '#6750a4');
++  } catch (_) {
++    return new THREE.Color('#6750a4');
++  }
++}
++
++function cycleMeasurementUnit() {
++  const index = MEASURE_UNIT_OPTIONS.indexOf(measureUnitMode);
++  measureUnitMode = MEASURE_UNIT_OPTIONS[(index + 1) % MEASURE_UNIT_OPTIONS.length];
++  updateMeasurementUi();
++}
++
++function inferModelUnit(extension) {
++  switch (String(extension || '').toLowerCase()) {
++    case 'stl':
++    case '3mf':
++    case 'amf':
++      return 'mm';
++    case 'fbx':
++      return 'cm';
++    case 'glb':
++    case 'gltf':
++    case 'dae':
++    case 'usdz':
++      return 'm';
++    default:
++      return 'unit';
++  }
++}
++
++function resolvedMeasurementUnit() {
++  return measureUnitMode === 'auto' ? modelNativeUnit : measureUnitMode;
++}
++
++function updateMeasurementUi() {
++  const unit = resolvedMeasurementUnit();
++  const label = MEASURE_UNIT_LABELS[unit] || MEASURE_UNIT_LABELS.unit;
++  dom.measureUnitButton.textContent = measureUnitMode === 'auto' ? `Авто · ${label}` : label;
++  dom.measureUnitButton.title = unit === 'unit'
++    ? 'Единицы модели не определены. Нажми, чтобы выбрать единицу'
++    : `1 единица модели считается как 1 ${label}`;
++
++  if (measurementPoints.length === 0) {
++    dom.measureValue.textContent = 'Коснись первой точки';
++    dom.measureDetail.textContent = measureMode
++      ? `Режим активен · 1 ед. модели = 1 ${label}`
++      : 'Включи линейку, чтобы поставить точки';
++  } else if (measurementPoints.length === 1) {
++    dom.measureValue.textContent = 'Коснись второй точки';
++    dom.measureDetail.textContent = `Первая точка поставлена · 1 ед. = 1 ${label}`;
++  } else {
++    const delta = measurementPoints[1].clone().sub(measurementPoints[0]);
++    const distance = delta.length();
++    dom.measureValue.textContent = `${formatMeasurementNumber(distance)} ${label}`;
++    dom.measureDetail.textContent = `ΔX ${formatMeasurementNumber(Math.abs(delta.x))} · ΔY ${formatMeasurementNumber(Math.abs(delta.y))} · ΔZ ${formatMeasurementNumber(Math.abs(delta.z))} ${label}`;
++  }
++
++  dom.measureCard.hidden = !measureMode && measurementPoints.length === 0;
++}
++
++function formatMeasurementNumber(value) {
++  const number = Math.abs(Number(value) || 0);
++  if (number === 0) return '0';
++  if (number >= 10000) return number.toLocaleString('ru-RU', { maximumFractionDigits: 1 });
++  if (number >= 1000) return number.toLocaleString('ru-RU', { maximumFractionDigits: 2 });
++  if (number >= 100) return number.toFixed(2);
++  if (number >= 10) return number.toFixed(3);
++  if (number >= 1) return number.toFixed(4);
++  if (number >= 0.001) return number.toFixed(5);
++  return number.toExponential(3).replace('.', ',');
++}
++
+ function resizeRenderer() {
+   if (!renderer || !camera) return;
+   const width = Math.max(dom.canvasHost.clientWidth, 1);
+@@ -730,6 +1006,7 @@
+   if (!renderer) return;
+   const color = getComputedStyle(document.documentElement).getPropertyValue('--canvas').trim() || '#f7f2fa';
+   renderer.setClearColor(new THREE.Color(color), 1);
++  if (measurementPoints.length > 0) rebuildMeasurementGraphics();
+ }
+ 
+ function normalizePath(value) {
+--- a/web/src/style.css
++++ b/web/src/style.css
+@@ -414,6 +414,126 @@
+   100% { opacity: 0; }
+ }
+ 
++.measure-fab {
++  position: absolute;
++  right: 16px;
++  bottom: 16px;
++  z-index: 5;
++  display: inline-flex;
++  align-items: center;
++  justify-content: center;
++  gap: 8px;
++  min-height: 48px;
++  padding: 0 18px;
++  border-radius: 16px;
++  color: var(--on-secondary-container);
++  background: color-mix(in srgb, var(--secondary-container) 94%, transparent);
++  box-shadow: 0 5px 16px var(--shadow);
++  backdrop-filter: blur(18px);
++  font-size: 13px;
++  font-weight: 700;
++  cursor: pointer;
++}
++
++.measure-fab[aria-pressed="true"] {
++  color: var(--on-primary);
++  background: var(--primary);
++}
++
++.measure-fab:active {
++  transform: translateY(1px);
++}
++
++.measure-card {
++  position: absolute;
++  right: 16px;
++  bottom: 76px;
++  z-index: 5;
++  display: grid;
++  grid-template-columns: minmax(0, 1fr) auto 40px;
++  align-items: center;
++  gap: 10px;
++  width: min(430px, calc(100% - 32px));
++  min-height: 76px;
++  padding: 12px 12px 12px 16px;
++  border: 1px solid color-mix(in srgb, var(--outline-variant) 75%, transparent);
++  border-radius: 22px;
++  background: color-mix(in srgb, var(--surface-container-high) 95%, transparent);
++  box-shadow: 0 8px 24px var(--shadow);
++  backdrop-filter: blur(20px);
++}
++
++.measure-copy {
++  min-width: 0;
++}
++
++.measure-copy span,
++.measure-copy strong,
++.measure-copy small {
++  display: block;
++}
++
++.measure-copy span {
++  color: var(--on-surface-variant);
++  font-size: 11px;
++  font-weight: 600;
++  line-height: 14px;
++}
++
++.measure-copy strong {
++  margin-top: 2px;
++  overflow: hidden;
++  text-overflow: ellipsis;
++  white-space: nowrap;
++  font-size: 18px;
++  font-weight: 650;
++  line-height: 24px;
++}
++
++.measure-copy small {
++  margin-top: 2px;
++  overflow: hidden;
++  color: var(--on-surface-variant);
++  text-overflow: ellipsis;
++  white-space: nowrap;
++  font-size: 10px;
++  line-height: 13px;
++}
++
++.measure-unit-button {
++  min-width: 58px;
++  min-height: 40px;
++  padding: 0 10px;
++  border: 1px solid var(--outline);
++  border-radius: 20px;
++  color: var(--primary);
++  background: transparent;
++  font-size: 12px;
++  font-weight: 700;
++  cursor: pointer;
++}
++
++.measure-clear-button {
++  display: grid;
++  place-items: center;
++  width: 40px;
++  height: 40px;
++  border-radius: 20px;
++  color: var(--on-surface-variant);
++  background: transparent;
++  cursor: pointer;
++}
++
++.measure-clear-button:active,
++.measure-unit-button:active {
++  background: color-mix(in srgb, var(--on-surface) 10%, transparent);
++}
++
++.measure-clear-button svg {
++  width: 21px;
++  height: 21px;
++}
++
+ .bottom-toolbar {
+   position: relative;
+   z-index: 8;
+@@ -737,4 +857,15 @@
+   .gesture-hint {
+     bottom: 8px;
+   }
++
++  .measure-fab {
++    right: 12px;
++    bottom: 12px;
++  }
++
++  .measure-card {
++    right: 12px;
++    bottom: 70px;
++    width: min(420px, calc(100% - 24px));
++  }
+ }
