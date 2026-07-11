@@ -37,13 +37,18 @@ jobs:
           sdkmanager "ndk;27.2.12479018" "cmake;3.31.1" "platforms;android-35" "build-tools;35.0.0"
           echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> "$GITHUB_ENV"
 
-      - name: Fetch pinned OrcaSlicer
+      - name: Fetch pinned OrcaSlicer build files
         shell: bash
         run: |
           set -euo pipefail
-          git clone --filter=blob:none --no-checkout https://github.com/OrcaSlicer/OrcaSlicer.git orca
+          mkdir orca
           cd orca
-          git checkout e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46
+          git init
+          git remote add origin https://github.com/OrcaSlicer/OrcaSlicer.git
+          git sparse-checkout init --cone
+          git sparse-checkout set deps cmake deps_src
+          git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46
+          git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46"
 
       - name: Configure upstream dependencies for Android
