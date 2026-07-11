@@ -63,8 +63,18 @@ jobs:
           set -euo pipefail
           python3 model-lab-v4/patches/patch_orca_deps_android.py orca
 
+      - name: Restore compiled Android dependencies
+        id: deps_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            build/orca-prefix
+            build/orca-deps
+          key: orca-android-arm64-ndk27-e1c0ea0-${{ hashFiles('model-lab-v4/patches/patch_orca_deps_android.py') }}
+
       - name: Configure upstream dependencies for Android
         id: configure_deps
+        if: steps.deps_cache.outputs.cache-hit != 'true'
         continue-on-error: true
         shell: bash
         run: |
@@ -84,13 +94,13 @@ jobs:
           tail -n 120 /tmp/orca-configure.log
 
       - name: List Android dependency targets
-        if: steps.configure_deps.outcome == 'success'
+        if: steps.deps_cache.outputs.cache-hit != 'true' && steps.configure_deps.outcome == 'success'
         shell: bash
         run: ninja -C build/orca-deps -t targets all > /tmp/orca-targets.txt
 
       - name: Build foundational dependencies
         id: dependency_build_1
-        if: steps.configure_deps.outcome == 'success'
+        if: steps.deps_cache.outputs.cache-hit != 'true' && steps.configure_deps.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
@@ -110,7 +120,7 @@ jobs:
 
       - name: Build geometry and G-code dependencies
         id: dependency_build_2
-        if: steps.dependency_build_1.outcome == 'success'
+        if: steps.deps_cache.outputs.cache-hit != 'true' && steps.dependency_build_1.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
@@ -128,6 +138,15 @@ jobs:
           done
           tail -n 240 /tmp/orca-dependencies-stage2.log
 
+      - name: Save compiled Android dependencies
+        if: steps.deps_cache.outputs.cache-hit != 'true' && steps.dependency_build_2.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            build/orca-prefix
+            build/orca-deps
+          key: orca-android-arm64-ndk27-e1c0ea0-${{ hashFiles('model-lab-v4/patches/patch_orca_deps_android.py') }}
+
       - name: Upload dependency diagnostics
         if: always()
         uses: actions/upload-artifact@v4
@@ -142,12 +161,12 @@ jobs:
           retention-days: 3
 
       - name: Stop on dependency failure
-        if: steps.configure_deps.outcome == 'failure' || steps.dependency_build_1.outcome == 'failure' || steps.dependency_build_2.outcome == 'failure'
+        if: steps.deps_cache.outputs.cache-hit != 'true' && (steps.configure_deps.outcome == 'failure' || steps.dependency_build_1.outcome == 'failure' || steps.dependency_build_2.outcome == 'failure')
         shell: bash
         run: exit 1
 
       - name: Patch pinned Orca sources for Android FDM core
-        if: steps.dependency_build_2.outcome == 'success'
+        if: steps.deps_cache.outputs.cache-hit == 'true' || steps.dependency_build_2.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
@@ -160,7 +179,7 @@ jobs:
 
       - name: Configure native libslic3r bridge
         id: configure_core
-        if: steps.dependency_build_2.outcome == 'success'
+        if: steps.deps_cache.outputs.cache-hit == 'true' || steps.dependency_build_2.outcome == 'success'
         continue-on-error: true
         shell: bash
         run: |
