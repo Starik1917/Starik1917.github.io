@@ -35,6 +35,7 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(TBB_STATIC 1)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_NO_SYSTEM_PATHS TRUE)
+set(Boost_DIR "${ORCA_DEP_PREFIX}/lib/cmake/Boost-1.84.0")
 
 set(SLIC3R_APP_NAME "Model Lab 3D")
 set(SLIC3R_APP_KEY "ModelLab3D")
@@ -73,7 +74,9 @@ function(encoding_check target_name)
     message(STATUS "Skipping host encoding check for Android target ${target_name}")
 endfunction()
 
-find_package(Boost 1.83.0 REQUIRED COMPONENTS
+# Use Boost's generated package config directly. CMake 3.31 removed the legacy
+# FindBoost module and the Android cross-build must not search host libraries.
+find_package(Boost 1.84.0 EXACT CONFIG REQUIRED COMPONENTS
     system filesystem thread log log_setup locale regex chrono atomic
     date_time iostreams program_options nowide)
 find_package(Eigen3 5.0.1 REQUIRED)
@@ -87,9 +90,24 @@ find_package(NLopt 1.4 REQUIRED)
 find_package(libnoise REQUIRED)
 
 add_library(boost_headeronly INTERFACE)
-target_include_directories(boost_headeronly SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
+target_link_libraries(boost_headeronly INTERFACE Boost::headers)
 add_library(boost_libs INTERFACE)
-target_link_libraries(boost_libs INTERFACE boost_headeronly ${Boost_LIBRARIES})
+target_link_libraries(boost_libs INTERFACE
+    boost_headeronly
+    Boost::system
+    Boost::filesystem
+    Boost::thread
+    Boost::log
+    Boost::log_setup
+    Boost::locale
+    Boost::regex
+    Boost::chrono
+    Boost::atomic
+    Boost::date_time
+    Boost::iostreams
+    Boost::program_options
+    Boost::nowide
+)
 
 # The preparation script removes only desktop/CAD integration code. Arachne,
 # perimeters, bridges, infill, supports, tree supports and G-code stay upstream.
