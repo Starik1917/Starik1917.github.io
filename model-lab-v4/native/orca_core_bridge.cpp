@@ -1,9 +1,14 @@
 #include "orca_core_bridge.hpp"
 
+#include <algorithm>
 #include <fstream>
+#include <initializer_list>
+#include <map>
 #include <set>
 #include <stdexcept>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include <boost/filesystem.hpp>
 #include <nlohmann/json.hpp>
@@ -11,6 +16,7 @@
 #include "libslic3r/Config.hpp"
 #include "libslic3r/Format/STL.hpp"
 #include "libslic3r/Model.hpp"
+#include "libslic3r/Preset.hpp"
 #include "libslic3r/Print.hpp"
 #include "libslic3r/PrintConfig.hpp"
 #include "libslic3r/Utils.hpp"
