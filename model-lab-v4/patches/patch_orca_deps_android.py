@@ -16,14 +16,16 @@ def remove_once(block: str, label: str) -> None:
     text = text.replace(block, f"# Android port: omitted desktop-only dependency ({label})\n", 1)
 
 
-# These libraries serve the wx/OpenGL desktop application and are not part of
-# the FDM toolpath engine used by the Android JNI bridge.
+# These libraries serve the wx/OpenGL desktop application or optional CAD/
+# networking features and are not part of the local FDM toolpath engine.
 remove_once("include(GLEW/GLEW.cmake)\n", "GLEW")
 remove_once("include(GLFW/GLFW.cmake)\n", "GLFW")
 remove_once("include(OpenCSG/OpenCSG.cmake)\n", "OpenCSG")
 remove_once("include(Blosc/Blosc.cmake)\n", "Blosc")
 remove_once("include(OpenEXR/OpenEXR.cmake)\n", "OpenEXR")
 remove_once("include(OpenVDB/OpenVDB.cmake)\n", "OpenVDB")
+remove_once("include(OCCT/OCCT.cmake)\n", "OpenCASCADE STEP import")
+remove_once("include(OpenCV/OpenCV.cmake)\n", "OpenCV color utility")
 
 wx_block = '''# flatpak builds wxwidgets separately, so it is not included in the deps target
 set(WXWIDGETS_PKG "")
@@ -40,11 +42,43 @@ text = text.replace(
     1,
 )
 
+curl_block = '''set(CURL_PKG "")
+if (NOT OPENSSL_FOUND OR NOT CURL_FOUND)
+    include(CURL/CURL.cmake)
+    set(CURL_PKG dep_CURL)
+endif ()
+'''
+if curl_block not in text:
+    raise RuntimeError("Orca dependency patch anchor not found: CURL")
+text = text.replace(
+    curl_block,
+    '# Android FDM core performs no printer-host networking.\nset(CURL_PKG "")\n',
+    1,
+)
+
+freetype_block = '''set(FREETYPE_PKG "")
+if(NOT FREETYPE_FOUND)
+    include(FREETYPE/FREETYPE.cmake)
+    set(FREETYPE_PKG "dep_FREETYPE")
+endif()
+'''
+if freetype_block not in text:
+    raise RuntimeError("Orca dependency patch anchor not found: Freetype")
+text = text.replace(
+    freetype_block,
+    '# Android FDM core omits OCCT text/STEP rendering.\nset(FREETYPE_PKG "")\n',
+    1,
+)
+
 for entry in [
+    "    ${CURL_PKG}\n",
     "    ${WXWIDGETS_PKG}\n",
+    "    ${FREETYPE_PKG}\n",
     "    dep_OpenVDB\n",
     "    dep_OpenCSG\n",
+    "    dep_OpenCV\n",
     "    dep_GLFW\n",
+    "    dep_OCCT\n",
 ]:
     if entry not in text:
         raise RuntimeError(f"Orca dependency list entry not found: {entry.strip()}")
