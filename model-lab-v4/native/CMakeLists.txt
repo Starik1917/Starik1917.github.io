@@ -84,6 +84,7 @@ find_package(EXPAT REQUIRED)
 find_package(PNG REQUIRED)
 find_package(cereal REQUIRED)
 find_package(NLopt 1.4 REQUIRED)
+find_package(libnoise REQUIRED)
 
 add_library(boost_headeronly INTERFACE)
 target_include_directories(boost_headeronly SYSTEM INTERFACE ${Boost_INCLUDE_DIRS})
