@@ -54,8 +54,8 @@ cmake.write_text(text, encoding="utf-8")
 
 # OpenSSL's upstream dependency recipe treats every non-Apple cross build as
 # Linux and invokes `./config linux-aarch64`. OpenSSL then detects the x86_64
-# CI host and aborts. Android must use its explicit Configure target and the
-# NDK LLVM toolchain directory.
+# CI host and aborts. Android must use its explicit Configure target and keep
+# the NDK compiler wrappers on PATH for both configure and make.
 openssl_cmake = root / "deps/OpenSSL/OpenSSL.cmake"
 openssl_text = openssl_cmake.read_text(encoding="utf-8")
 openssl_setup_pattern = re.compile(
@@ -68,18 +68,21 @@ if(ANDROID)
     if(NOT CMAKE_ANDROID_NDK)
         message(FATAL_ERROR "CMAKE_ANDROID_NDK is required to build OpenSSL for Android")
     endif()
+    if(NOT ANDROID_API_LEVEL)
+        set(ANDROID_API_LEVEL 26)
+    endif()
     set(_openssl_toolchain_bin "${CMAKE_ANDROID_NDK}/toolchains/llvm/prebuilt/linux-x86_64/bin")
-    set(_conf_cmd
+    set(_openssl_env
         ${CMAKE_COMMAND} -E env
         "ANDROID_NDK_ROOT=${CMAKE_ANDROID_NDK}"
         "ANDROID_NDK_HOME=${CMAKE_ANDROID_NDK}"
-        "PATH=${_openssl_toolchain_bin}:$ENV{PATH}"
-        perl Configure)
+        "PATH=${_openssl_toolchain_bin}:$ENV{PATH}")
+    set(_conf_cmd ${_openssl_env} perl Configure)
     set(_cross_arch "android-arm64")
     set(_cross_comp_prefix_line "")
-    set(_android_api_line "-D__ANDROID_API__=${CMAKE_SYSTEM_VERSION}")
-    set(_make_cmd make -j${NPROC})
-    set(_install_cmd make -j${NPROC} install_sw)
+    set(_android_api_line "-D__ANDROID_API__=${ANDROID_API_LEVEL}")
+    set(_make_cmd ${_openssl_env} make -j${NPROC})
+    set(_install_cmd ${_openssl_env} make -j${NPROC} install_sw)
 elseif(DEFINED OPENSSL_ARCH)
     set(_cross_arch ${OPENSSL_ARCH})
 endif()
