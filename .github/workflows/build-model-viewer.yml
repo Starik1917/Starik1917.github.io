@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - build/model-viewer-apk
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
