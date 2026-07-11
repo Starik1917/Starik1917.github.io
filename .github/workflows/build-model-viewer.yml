@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - build/model-viewer-apk
+      - build/model-viewer-ruler-v1.1
   pull_request:
     branches:
       - main
@@ -38,6 +39,14 @@ jobs:
           echo "478515a2b6dba8661c9e39da8ea5b8dfa18efe3e81450d9b1b6f2624d4b6cae5  /tmp/model-viewer-project.zip" | sha256sum --check
           mkdir -p build-src
           unzip -q /tmp/model-viewer-project.zip -d build-src
+
+      - name: Apply ruler update
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "0c8219b9fec8c1a7a129d8b12ee03ea16aa5ee88d1cb9b01334bbf4c160f2489  model-viewer-build/ruler-v1.1.patch" | sha256sum --check
+          patch -p1 -d build-src < model-viewer-build/ruler-v1.1.patch
+          node --check build-src/web/src/main.js
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -76,7 +85,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: ModelViewer3D-APK
+          name: ModelViewer3D-v1.1-ruler-APK
           path: build-src/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 7
