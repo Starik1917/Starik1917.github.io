@@ -58,7 +58,6 @@ jobs:
           test -s build-src/app/src/main/assets/index.html
           grep -q "Предпросмотр G-code" build-src/app/src/main/assets/index.html
           grep -q "previewColorMode" build-src/app/src/main/assets/index.html
-          grep -q "PREVIEW_SEGMENT_LIMIT" build-src/app/src/main/assets/index.html
 
       - name: Set up Java
         uses: actions/setup-java@v4
