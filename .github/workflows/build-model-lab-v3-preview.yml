@@ -27,7 +27,11 @@ jobs:
           set -euo pipefail
           rm -rf build-src
           cp -a model-lab-v3/source build-src
-          python3 model-lab-v3/patch_v3_preview.py build-src
+          if ! python3 model-lab-v3/patch_v3_preview.py build-src >/tmp/model-lab-patch.log 2>&1; then
+            cat /tmp/model-lab-patch.log
+            exit 1
+          fi
+          cat /tmp/model-lab-patch.log
           node --check build-src/web/src/main.js
           grep -q "LineSegments2" build-src/web/src/main.js
           grep -q "layerBottomSlider" build-src/web/index.html
