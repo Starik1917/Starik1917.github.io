@@ -1,0 +1,192 @@
+name: Build Model Lab 3D v3 preview3
+
+on:
+  push:
+    branches:
+      - build/model-lab-v3-preview3
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build-src
+          cp -a model-lab-v3/source build-src
+
+          sed -i 's/    if (onHome) {/  if (onHome) {/g' model-lab-v3/patch_v3_preview.py
+          python3 model-lab-v3/patch_v3_preview.py build-src
+
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('model-lab-v3/patch_v3_preview2.py')
+          text = path.read_text()
+          block = '''main = replace_once(
+              main,
+              "versionName '3.0.0-preview1'",
+              "versionName '3.0.0-preview2'",
+              "version name in generated source",
+          )
+
+          '''
+          if block not in text:
+              raise SystemExit('preview2 cleanup anchor not found')
+          path.write_text(text.replace(block, '', 1))
+          PY
+
+          python3 model-lab-v3/patch_v3_preview2.py build-src
+          python3 model-lab-v3/patch_v3_preview3.py build-src
+          node --check build-src/web/src/main.js
+          grep -q "computeLocalSolidRegions" build-src/web/src/main.js
+          grep -q "localSolidLayerCount" build-src/web/src/main.js
+          grep -q "versionName '3.0.0-preview3'" build-src/app/build.gradle
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install web dependencies
+        working-directory: build-src
+        run: npm install --no-audit --no-fund
+
+      - name: Test intermediate horizontal skins
+        working-directory: build-src
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          const vm = require('vm');
+          const ClipperLib = require('clipper-lib');
+          const source = fs.readFileSync('web/src/main.js', 'utf8');
+
+          function extractFunction(name) {
+            const start = source.indexOf(`function ${name}(`);
+            if (start < 0) throw new Error(`Function ${name} not found`);
+            const brace = source.indexOf('{', start);
+            let depth = 0;
+            let quote = null;
+            let escaped = false;
+            for (let i = brace; i < source.length; i += 1) {
+              const ch = source[i];
+              if (quote) {
+                if (escaped) escaped = false;
+                else if (ch === '\\') escaped = true;
+                else if (ch === quote) quote = null;
+                continue;
+              }
+              if (ch === '"' || ch === "'" || ch === '`') { quote = ch; continue; }
+              if (ch === '{') depth += 1;
+              if (ch === '}') {
+                depth -= 1;
+                if (depth === 0) return source.slice(start, i + 1);
+              }
+            }
+            throw new Error(`Unclosed function ${name}`);
+          }
+
+          const scaleMatch = source.match(/const CLIPPER_SCALE = ([0-9_]+);/);
+          if (!scaleMatch) throw new Error('CLIPPER_SCALE not found');
+          const CLIPPER_SCALE = Number(scaleMatch[1].replaceAll('_', ''));
+          const names = ['cleanClipperPaths', 'unionPaths', 'offsetPaths', 'differencePaths', 'intersectionPaths', 'computeLocalSolidRegions'];
+          const context = { ClipperLib, CLIPPER_SCALE, console, Math, Number, Array };
+          vm.createContext(context);
+          vm.runInContext(names.map(extractFunction).join('\n'), context);
+
+          const rect = (x1, y1, x2, y2) => [[
+            { X: x1 * CLIPPER_SCALE, Y: y1 * CLIPPER_SCALE },
+            { X: x2 * CLIPPER_SCALE, Y: y1 * CLIPPER_SCALE },
+            { X: x2 * CLIPPER_SCALE, Y: y2 * CLIPPER_SCALE },
+            { X: x1 * CLIPPER_SCALE, Y: y2 * CLIPPER_SCALE }
+          ]];
+          const rails = [...rect(0, 0, 8, 60), ...rect(92, 0, 100, 60)];
+          const roof = rect(0, 0, 100, 60);
+          const regions = Array.from({ length: 12 }, (_, i) => (i >= 4 && i <= 7 ? roof : rails));
+          const skins = context.computeLocalSolidRegions(regions, 2, 0.42);
+          const area = (paths) => paths.reduce((sum, path) => sum + Math.abs(ClipperLib.Clipper.Area(path)), 0) / (CLIPPER_SCALE * CLIPPER_SCALE);
+          const roofAreas = [4, 5, 6, 7].map((i) => area(skins[i]));
+          console.log('intermediate roof skin areas:', roofAreas);
+          if (roofAreas.some((value) => value < 3000)) {
+            throw new Error(`Intermediate horizontal skin was not preserved: ${roofAreas.join(', ')}`);
+          }
+          NODE
+
+      - name: Bundle offline application
+        working-directory: build-src
+        run: npm run build:web
+
+      - name: Verify bundled application
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build-src/app/src/main/assets/index.html
+          grep -q "computeLocalSolidRegions" build-src/app/src/main/assets/index.html
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Build installable APK
+        working-directory: build-src
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build-src/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -t "$APK"
+          unzip -l "$APK" | grep -q "assets/index.html"
+          cp "$APK" ModelLab3D-v3.0-preview3.apk
+          sha256sum ModelLab3D-v3.0-preview3.apk
+
+      - name: Package source
+        shell: bash
+        run: |
+          rm -rf build-src/node_modules build-src/app/build
+          cd build-src
+          zip -qr ../ModelLab3D-v3.0-preview3-source.zip .
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v3.0-preview3-APK
+          path: ModelLab3D-v3.0-preview3.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload source
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v3.0-preview3-source
+          path: ModelLab3D-v3.0-preview3-source.zip
+          if-no-files-found: error
+          retention-days: 7
