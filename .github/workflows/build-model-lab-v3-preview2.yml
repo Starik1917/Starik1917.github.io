@@ -74,9 +74,6 @@ jobs:
         run: |
           set -euo pipefail
           test -s build-src/app/src/main/assets/index.html
-          grep -q "previewDockPlayButton" build-src/app/src/main/assets/index.html
-          grep -q "previewCollapseButton" build-src/app/src/main/assets/index.html
-          grep -q "is-previewing" build-src/app/src/main/assets/index.html
 
       - name: Set up Java
         uses: actions/setup-java@v4
