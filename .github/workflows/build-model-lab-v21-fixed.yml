@@ -52,6 +52,9 @@ jobs:
           PY
           base64 --decode /tmp/model-lab-v2.1.patch.gz.b64 | gzip -d > /tmp/model-lab-v2.1.patch
           patch -d build-src -p1 < /tmp/model-lab-v2.1.patch
+          sed -i "s/versionCode 3/versionCode 4/; s/versionName '2.0.0'/versionName '2.1.0'/" build-src/app/build.gradle
+          sed -i 's/"version": "2.0.0"/"version": "2.1.0"/' build-src/package.json
+          sed -i 's/220 × 220 × 250 мм/220 × 220 × 220 мм/' build-src/web/index.html
           node --check build-src/web/src/main.js
 
       - name: Set up Node.js
@@ -75,6 +78,8 @@ jobs:
           grep -q "Adventurer 5M" build-src/app/src/main/assets/index.html
           grep -q "supportTypeSelect" build-src/app/src/main/assets/index.html
           grep -q "supportInterfaceLayersInput" build-src/app/src/main/assets/index.html
+          grep -q "supportXYDistanceInput" build-src/app/src/main/assets/index.html
+          grep -q "versionName '2.1.0'" build-src/app/build.gradle
 
       - name: Set up Java
         uses: actions/setup-java@v4
