@@ -21,7 +21,12 @@ if(NOT EXISTS "${ORCA_DEP_PREFIX}/include")
     message(FATAL_ERROR "ORCA_DEP_PREFIX does not contain Android Orca dependencies")
 endif()
 
+# Android's toolchain roots package searches inside the NDK sysroot by default.
+# The Orca dependencies are cross-compiled into a separate prefix, so make that
+# prefix an explicit package root rather than ever falling back to host libs.
 list(PREPEND CMAKE_PREFIX_PATH "${ORCA_DEP_PREFIX}")
+list(PREPEND CMAKE_FIND_ROOT_PATH "${ORCA_DEP_PREFIX}")
+set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
 list(APPEND CMAKE_MODULE_PATH "${ORCA_SOURCE_DIR}/cmake/modules")
 
 set(SLIC3R_GUI OFF CACHE BOOL "" FORCE)
@@ -36,6 +41,12 @@ set(TBB_STATIC 1)
 set(Boost_USE_STATIC_LIBS ON)
 set(Boost_NO_SYSTEM_PATHS TRUE)
 set(Boost_DIR "${ORCA_DEP_PREFIX}/lib/cmake/Boost-1.84.0")
+foreach(_boost_component
+    headers system filesystem thread log log_setup locale regex chrono atomic
+    date_time iostreams program_options nowide)
+    set("boost_${_boost_component}_DIR"
+        "${ORCA_DEP_PREFIX}/lib/cmake/boost_${_boost_component}-1.84.0")
+endforeach()
 
 set(SLIC3R_APP_NAME "Model Lab 3D")
 set(SLIC3R_APP_KEY "ModelLab3D")
