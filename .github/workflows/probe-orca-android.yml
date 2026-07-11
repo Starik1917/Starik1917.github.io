@@ -1,0 +1,65 @@
+name: Probe OrcaSlicer Android port
+
+on:
+  push:
+    branches:
+      - build/model-lab-v4-orca
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout Model Lab
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NDK and build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager "ndk;27.2.12479018" "cmake;3.31.1" "platforms;android-35" "build-tools;35.0.0"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> "$GITHUB_ENV"
+
+      - name: Fetch pinned OrcaSlicer
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/OrcaSlicer/OrcaSlicer.git orca
+          cd orca
+          git checkout e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46
+          git rev-parse HEAD
+
+      - name: Configure upstream dependencies for Android
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" \
+            -S orca/deps \
+            -B build/orca-deps \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-26 \
+            -DANDROID_STL=c++_static \
+            -DDESTDIR="$GITHUB_WORKSPACE/build/orca-prefix" \
+            -DDEP_WX_GTK3=OFF
+
+      - name: List generated dependency targets
+        shell: bash
+        run: |
+          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-deps --target help | sed -n '1,240p'
