@@ -25,7 +25,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat model-lab-v2/payload/part{00..08}.b64 | base64 --decode > /tmp/model-lab-v2.zip
+          cat model-lab-v2/payload/part00a.b64 model-lab-v2/payload/part00b.b64 model-lab-v2/payload/part{01..08}.b64 | base64 --decode > /tmp/model-lab-v2.zip
           echo "1be51639093fee26dfb24a32a76f7faf2520ec161593f3ea5f1e597342e0688b  /tmp/model-lab-v2.zip" | sha256sum --check
           mkdir -p build-src
           unzip -q /tmp/model-lab-v2.zip -d build-src
