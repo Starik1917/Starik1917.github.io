@@ -1,6 +1,6 @@
 package com.starik.modelviewer;
 
-import androidx.annotation.NonNull;
+import java.util.Objects;
 
 /**
  * Thin Java entry point for the native OrcaSlicer engine.
@@ -14,12 +14,10 @@ public final class OrcaNative {
     private OrcaNative() {
     }
 
-    @NonNull
-    public static String slice(@NonNull String requestJson) {
-        return nativeSlice(requestJson);
+    public static String slice(String requestJson) {
+        return nativeSlice(Objects.requireNonNull(requestJson, "requestJson"));
     }
 
-    @NonNull
     public static String engineName() {
         return nativeEngineName();
     }
