@@ -14,6 +14,7 @@ permissions:
 
 jobs:
   build:
+    if: github.head_ref != 'build/model-lab-v4-orca'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
