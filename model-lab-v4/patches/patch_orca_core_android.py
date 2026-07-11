@@ -43,6 +43,8 @@ step_header.write_text(r'''#ifndef slic3r_Format_STEP_hpp_
 #include <functional>
 #include <string>
 
+#include <boost/filesystem/path.hpp>
+
 namespace Slic3r {
 
 class Model;
@@ -74,6 +76,7 @@ public:
 class Step {
 public:
     enum class Step_Status { LOAD_SUCCESS, LOAD_ERROR, CANCEL, MESH_SUCCESS, MESH_ERROR };
+    Step(const boost::filesystem::path&, ImportStepProgressFn = nullptr, StepIsUtf8Fn = nullptr) {}
     Step(const std::string&, ImportStepProgressFn = nullptr, StepIsUtf8Fn = nullptr) {}
     ~Step() = default;
     Step_Status load() { return Step_Status::LOAD_ERROR; }
