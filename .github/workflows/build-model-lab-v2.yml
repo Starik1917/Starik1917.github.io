@@ -1,0 +1,91 @@
+name: Build Model Lab 3D v2 APK
+
+on:
+  push:
+    branches:
+      - build/model-lab-v2
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat model-lab-v2/payload/part{00..08}.b64 | base64 --decode > /tmp/model-lab-v2.zip
+          echo "1be51639093fee26dfb24a32a76f7faf2520ec161593f3ea5f1e597342e0688b  /tmp/model-lab-v2.zip" | sha256sum --check
+          mkdir -p build-src
+          unzip -q /tmp/model-lab-v2.zip -d build-src
+          node --check build-src/web/src/main.js
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install web dependencies
+        working-directory: build-src
+        run: npm install --no-audit --no-fund
+
+      - name: Bundle offline application
+        working-directory: build-src
+        run: npm run build:web
+
+      - name: Verify bundled application
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build-src/app/src/main/assets/index.html
+          grep -q "Model Lab" build-src/app/src/main/assets/index.html
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Build installable APK
+        working-directory: build-src
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build-src/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -t "$APK"
+          unzip -l "$APK" | grep -q "assets/index.html"
+          sha256sum "$APK"
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v2.0-APK
+          path: build-src/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
