@@ -51,6 +51,12 @@ jobs:
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46"
 
+      - name: Remove desktop-only dependencies from Android graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 model-lab-v4/patches/patch_orca_deps_android.py orca
+
       - name: Configure upstream dependencies for Android
         id: configure
         continue-on-error: true
@@ -67,7 +73,6 @@ jobs:
             -DANDROID_PLATFORM=android-26 \
             -DANDROID_STL=c++_static \
             -DDESTDIR="$GITHUB_WORKSPACE/build/orca-prefix" \
-            -DDEP_WX_GTK3=OFF \
             > /tmp/orca-configure.log 2>&1
           tail -n 120 /tmp/orca-configure.log
 
