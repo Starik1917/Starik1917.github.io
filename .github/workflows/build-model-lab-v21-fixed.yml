@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - build/model-lab-v2-1
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -42,7 +45,7 @@ jobs:
           from pathlib import Path
           import re
           workflow = Path('.github/workflows/build-model-lab-v2.yml').read_text()
-          match = re.search(r"printf '%s' '([^']+)' \\| base64 --decode", workflow)
+          match = re.search(r"printf '%s' '([A-Za-z0-9+/=]+)'", workflow)
           if not match:
               raise SystemExit('Embedded patch was not found')
           Path('/tmp/model-lab-v2.1.patch.gz.b64').write_text(match.group(1))
