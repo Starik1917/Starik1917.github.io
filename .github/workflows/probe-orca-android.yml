@@ -52,10 +52,12 @@ jobs:
           test "$(git rev-parse HEAD)" = "e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46"
 
       - name: Configure upstream dependencies for Android
+        id: configure
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
-          if ! "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" \
+          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" \
             -S orca/deps \
             -B build/orca-deps \
             -G Ninja \
@@ -66,14 +68,27 @@ jobs:
             -DANDROID_STL=c++_static \
             -DDESTDIR="$GITHUB_WORKSPACE/build/orca-prefix" \
             -DDEP_WX_GTK3=OFF \
-            > /tmp/orca-configure.log 2>&1; then
-            echo "===== Orca Android configure failure ====="
-            tail -n 180 /tmp/orca-configure.log
-            exit 1
-          fi
-          tail -n 80 /tmp/orca-configure.log
+            > /tmp/orca-configure.log 2>&1
+          tail -n 120 /tmp/orca-configure.log
+
+      - name: Upload configure diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-android-configure-log
+          path: /tmp/orca-configure.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Fail if upstream configure failed
+        if: steps.configure.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "Upstream Orca dependency configuration is not Android-ready yet."
+          exit 1
 
       - name: List generated dependency targets
+        if: steps.configure.outcome == 'success'
         shell: bash
         run: |
           "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-deps --target help | sed -n '1,240p'
