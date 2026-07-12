@@ -9,6 +9,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: model-lab-v4-orca-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
