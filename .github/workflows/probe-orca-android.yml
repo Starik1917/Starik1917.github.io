@@ -1,4 +1,4 @@
-name: Build native OrcaSlicer Android core
+name: Build Model Lab 3D with native OrcaSlicer
 
 on:
   push:
@@ -17,9 +17,9 @@ permissions:
   contents: read
 
 jobs:
-  native-core:
+  native-orca-apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 150
 
     steps:
       - name: Checkout Model Lab
@@ -50,10 +50,12 @@ jobs:
           git init
           git remote add origin https://github.com/OrcaSlicer/OrcaSlicer.git
           git sparse-checkout init --cone
-          git sparse-checkout set deps cmake deps_src src/libslic3r
+          git sparse-checkout set deps cmake deps_src src/libslic3r resources
           git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46"
+          test -f LICENSE.txt
+          test -f "resources/profiles/Flashforge/machine/Flashforge Adventurer 5M 0.4 Nozzle.json"
 
       - name: Restore Orca source download cache
         uses: actions/cache@v4
@@ -212,7 +214,7 @@ jobs:
           "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-native \
             --target model_lab_orca --parallel 2 \
             > /tmp/orca-core-build.log 2>&1
-          tail -n 260 /tmp/orca-core-build.log
+          tail -n 280 /tmp/orca-core-build.log
 
       - name: Upload native core diagnostics
         if: always()
@@ -230,17 +232,20 @@ jobs:
         shell: bash
         run: exit 1
 
-      - name: Verify native library
+      - name: Verify native Orca library
         if: steps.build_core.outcome == 'success'
         shell: bash
         run: |
           set -euo pipefail
           LIB="$(find build/orca-native -name 'libmodel_lab_orca.so' -type f -print -quit)"
           test -n "$LIB"
-          file "$LIB"
-          llvm-readelf -d "$LIB" | tee /tmp/orca-native-readelf.txt
+          file "$LIB" | tee /tmp/orca-native-file.txt
+          grep -qi 'aarch64\|ARM aarch64' /tmp/orca-native-file.txt
+          READELF="$(find "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt" -path '*/bin/llvm-readelf' -print -quit)"
+          "$READELF" -d "$LIB" | tee /tmp/orca-native-readelf.txt
           cp "$LIB" libmodel_lab_orca-arm64-v8a.so
-          sha256sum libmodel_lab_orca-arm64-v8a.so
+          sha256sum libmodel_lab_orca-arm64-v8a.so | tee /tmp/orca-native-sha256.txt
+          echo "MODEL_LAB_ORCA_LIB=$GITHUB_WORKSPACE/libmodel_lab_orca-arm64-v8a.so" >> "$GITHUB_ENV"
 
       - name: Upload native Orca library
         if: steps.build_core.outcome == 'success'
@@ -249,6 +254,149 @@ jobs:
           name: model-lab-orca-native-arm64
           path: |
             libmodel_lab_orca-arm64-v8a.so
+            /tmp/orca-native-file.txt
             /tmp/orca-native-readelf.txt
+            /tmp/orca-native-sha256.txt
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Set up Node.js
+        if: steps.build_core.outcome == 'success'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Prepare mobile application source
+        if: steps.build_core.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build-app
+          cp -a model-lab-v3/source build-app
+
+          sed -i 's/    if (onHome) {/  if (onHome) {/g' model-lab-v3/patch_v3_preview.py
+          python3 model-lab-v3/patch_v3_preview.py build-app
+
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('model-lab-v3/patch_v3_preview2.py')
+          text = path.read_text()
+          block = '''main = replace_once(
+              main,
+              "versionName '3.0.0-preview1'",
+              "versionName '3.0.0-preview2'",
+              "version name in generated source",
+          )
+
+          '''
+          if block not in text:
+              raise SystemExit('preview2 cleanup anchor not found')
+          path.write_text(text.replace(block, '', 1))
+          PY
+          python3 model-lab-v3/patch_v3_preview2.py build-app
+
+          cp model-lab-v4/web/orca-client.js build-app/web/src/orca-client.js
+          python3 model-lab-v4/patches/patch_web_orca.py build-app
+          python3 model-lab-v4/patches/patch_android_app.py build-app model-lab-v4 "$MODEL_LAB_ORCA_LIB"
+
+          node --check build-app/web/src/main.js
+          node --check build-app/web/src/orca-client.js
+          grep -q "ModelLabOrca.slice" build-app/web/src/main.js
+          ! grep -q "await sliceModel" build-app/web/src/main.js
+          grep -q "versionName '4.0.0-alpha1'" build-app/app/build.gradle
+
+      - name: Bundle official Orca profiles and license
+        if: steps.build_core.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSETS="build-app/app/src/main/assets/orca"
+          mkdir -p "$ASSETS/resources/profiles" "$ASSETS/data"
+          cp -a orca/resources/profiles/Flashforge "$ASSETS/resources/profiles/"
+          cp orca/resources/profiles/Flashforge.json "$ASSETS/resources/profiles/Flashforge.json"
+          cp orca/LICENSE.txt "$ASSETS/ORCASLICER-AGPL-3.0.txt"
+          printf '%s\n' 'OrcaSlicer commit e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46' > "$ASSETS/UPSTREAM.txt"
+          printf '%s\n' 'Model Lab runtime data directory' > "$ASSETS/data/.keep"
+
+          test -f "$ASSETS/resources/profiles/Flashforge/machine/Flashforge Adventurer 5M 0.4 Nozzle.json"
+          test -f "$ASSETS/resources/profiles/Flashforge/process/0.20mm Standard @Flashforge AD5M 0.4 Nozzle.json"
+          test -f "$ASSETS/resources/profiles/Flashforge/filament/Flashforge Generic PLA.json"
+
+      - name: Install web dependencies and bundle UI
+        if: steps.build_core.outcome == 'success'
+        working-directory: build-app
+        run: |
+          npm install --no-audit --no-fund
+          npm run build:web
+
+      - name: Set up Gradle
+        if: steps.build_core.outcome == 'success'
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Build installable APK
+        id: build_apk
+        if: steps.build_core.outcome == 'success'
+        working-directory: build-app
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle :app:assembleDebug --stacktrace
+
+      - name: Verify APK contains Orca core and profiles
+        if: steps.build_apk.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build-app/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -t "$APK" > /tmp/apk-test.txt
+          unzip -l "$APK" > /tmp/apk-files.txt
+          grep -q 'lib/arm64-v8a/libmodel_lab_orca.so' /tmp/apk-files.txt
+          grep -q 'assets/index.html' /tmp/apk-files.txt
+          grep -q 'assets/orca/resources/profiles/Flashforge/machine/Flashforge Adventurer 5M 0.4 Nozzle.json' /tmp/apk-files.txt
+          grep -q 'assets/orca/ORCASLICER-AGPL-3.0.txt' /tmp/apk-files.txt
+          cp "$APK" ModelLab3D-v4.0-alpha1-Orca.apk
+          sha256sum ModelLab3D-v4.0-alpha1-Orca.apk | tee /tmp/model-lab-apk-sha256.txt
+
+      - name: Upload Model Lab Orca APK
+        if: steps.build_apk.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v4.0-alpha1-Orca-APK
+          path: |
+            ModelLab3D-v4.0-alpha1-Orca.apk
+            /tmp/model-lab-apk-sha256.txt
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Package corresponding source
+        if: steps.build_apk.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build-app/node_modules build-app/app/build
+          mkdir -p corresponding-source
+          cp -a build-app corresponding-source/ModelLab3D
+          cp -a model-lab-v4 corresponding-source/model-lab-v4-port
+          cp orca/LICENSE.txt corresponding-source/ORCASLICER-AGPL-3.0.txt
+          cp model-lab-v4/orcaslicer.lock corresponding-source/orcaslicer.lock
+          cat > corresponding-source/README.txt <<'EOF'
+          Model Lab 3D v4 uses OrcaSlicer/libslic3r pinned at:
+          e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46
+
+          The Android adaptation and application source are provided here under
+          AGPL-3.0. Fetch the pinned upstream source with the repository and
+          commit recorded in orcaslicer.lock, then apply the included patches.
+          EOF
+          zip -qr ModelLab3D-v4.0-alpha1-Orca-source.zip corresponding-source
+
+      - name: Upload corresponding source
+        if: steps.build_apk.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v4.0-alpha1-Orca-source
+          path: ModelLab3D-v4.0-alpha1-Orca-source.zip
           if-no-files-found: error
           retention-days: 7
