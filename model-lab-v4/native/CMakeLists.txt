@@ -79,10 +79,13 @@ add_compile_options(
     -Wno-deprecated-declarations
 )
 
-# Orca's normal top-level build defines this check for desktop builds. The
-# Android cross-build cannot execute target binaries during configuration.
+# Orca's normal top-level build defines these helpers. Android uses a single
+# Release configuration and never runs target binaries while configuring, so
+# the helpers are intentionally no-ops here.
 function(encoding_check target_name)
     message(STATUS "Skipping host encoding check for Android target ${target_name}")
+endfunction()
+function(slic3r_remap_configs)
 endfunction()
 
 # Use Boost's generated package config directly. CMake 3.31 removed the legacy
