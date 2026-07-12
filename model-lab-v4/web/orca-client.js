@@ -7,6 +7,11 @@ function requireNativeBridge() {
   return window.AndroidOrca;
 }
 
+function callbackId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `orca-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
 function bytesToBase64(bytes) {
   let binary = '';
   const block = 0x8000;
@@ -14,6 +19,13 @@ function bytesToBase64(bytes) {
     binary += String.fromCharCode(...bytes.subarray(offset, offset + block));
   }
   return btoa(binary);
+}
+
+function base64ToBytes(value) {
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return bytes;
 }
 
 async function stageModel(file, onProgress = () => {}) {
@@ -39,16 +51,35 @@ async function stageModel(file, onProgress = () => {}) {
 
 function invokeNativeSlice(request) {
   const bridge = requireNativeBridge();
-  const callbackId = crypto.randomUUID();
+  const id = callbackId();
   return new Promise((resolve, reject) => {
-    callbacks.set(callbackId, { resolve, reject });
+    callbacks.set(id, { resolve, reject });
     try {
-      bridge.slice(JSON.stringify(request), callbackId);
+      bridge.slice(JSON.stringify(request), id);
     } catch (error) {
-      callbacks.delete(callbackId);
+      callbacks.delete(id);
       reject(error);
     }
   });
+}
+
+async function readGcode(path, onProgress = () => {}) {
+  const bridge = requireNativeBridge();
+  const size = Number(bridge.outputSize(path));
+  if (!Number.isFinite(size) || size <= 0) throw new Error('OrcaSlicer вернул пустой G-code');
+
+  const decoder = new TextDecoder('utf-8');
+  const chunks = [];
+  const chunkSize = 192 * 1024;
+  for (let offset = 0; offset < size; offset += chunkSize) {
+    const encoded = bridge.readOutputBase64(path, offset, Math.min(chunkSize, size - offset));
+    if (!encoded) throw new Error('Не удалось прочитать G-code из нативного ядра');
+    chunks.push(decoder.decode(base64ToBytes(encoded), { stream: offset + chunkSize < size }));
+    onProgress(Math.min(1, (offset + chunkSize) / size));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+  }
+  chunks.push(decoder.decode());
+  return chunks.join('');
 }
 
 export const ModelLabOrca = {
@@ -56,17 +87,22 @@ export const ModelLabOrca = {
     return requireNativeBridge().engineName();
   },
 
-  async slice(file, request, onStageProgress) {
+  async slice(file, request, onStageProgress, onReadProgress) {
     await stageModel(file, onStageProgress);
     const result = await invokeNativeSlice(request);
     if (!result.ok) throw new Error(result.error || 'OrcaSlicer не смог выполнить нарезку');
+    result.gcode = await readGcode(result.gcodePath, onReadProgress);
     return result;
   },
 
-  _resolve(callbackId, responseJson) {
-    const callback = callbacks.get(callbackId);
+  deleteOutput(path) {
+    return Boolean(requireNativeBridge().deleteOutput(path));
+  },
+
+  _resolve(id, responseJson) {
+    const callback = callbacks.get(id);
     if (!callback) return;
-    callbacks.delete(callbackId);
+    callbacks.delete(id);
     try {
       callback.resolve(JSON.parse(responseJson));
     } catch (error) {
