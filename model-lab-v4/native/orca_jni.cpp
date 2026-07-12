@@ -38,17 +38,16 @@ Java_com_starik_modelviewer_OrcaNative_nativeSlice(
     json response;
     try {
         const json request = json::parse(from_jstring(env, request_json));
-        model_lab::orca::SliceRequest native_request {
-            .model_path = request.value("modelPath", ""),
-            .output_gcode_path = request.value("outputGcodePath", ""),
-            .resources_dir = request.value("resourcesDir", ""),
-            .data_dir = request.value("dataDir", ""),
-            .machine_profile_path = request.value("machineProfilePath", ""),
-            .process_profile_path = request.value("processProfilePath", ""),
-            .filament_profile_path = request.value("filamentProfilePath", ""),
-            .profile_root = request.value("profileRoot", ""),
-            .config_overrides_json = request.value("configOverrides", json::object()).dump()
-        };
+        model_lab::orca::SliceRequest native_request;
+        native_request.model_path = request.value("modelPath", "");
+        native_request.output_gcode_path = request.value("outputGcodePath", "");
+        native_request.resources_dir = request.value("resourcesDir", "");
+        native_request.data_dir = request.value("dataDir", "");
+        native_request.machine_profile_path = request.value("machineProfilePath", "");
+        native_request.process_profile_path = request.value("processProfilePath", "");
+        native_request.filament_profile_path = request.value("filamentProfilePath", "");
+        native_request.profile_root = request.value("profileRoot", "");
+        native_request.config_overrides_json = request.value("configOverrides", json::object()).dump();
 
         const auto result = model_lab::orca::slice_with_orca(native_request, {});
         response = {
