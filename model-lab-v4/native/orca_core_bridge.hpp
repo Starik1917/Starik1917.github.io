@@ -14,6 +14,7 @@ struct SliceRequest {
     std::string process_profile_path;
     std::string filament_profile_path;
     std::string profile_root;
+    std::string config_overrides_json;
 };
 
 struct SliceResult {
