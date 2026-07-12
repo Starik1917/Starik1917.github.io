@@ -21,9 +21,6 @@ if(NOT EXISTS "${ORCA_DEP_PREFIX}/include")
     message(FATAL_ERROR "ORCA_DEP_PREFIX does not contain Android Orca dependencies")
 endif()
 
-# Android's toolchain roots package searches inside the NDK sysroot by default.
-# The Orca dependencies are cross-compiled into a separate prefix, so make that
-# prefix an explicit package root rather than ever falling back to host libs.
 list(PREPEND CMAKE_PREFIX_PATH "${ORCA_DEP_PREFIX}")
 list(PREPEND CMAKE_FIND_ROOT_PATH "${ORCA_DEP_PREFIX}")
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE BOTH)
@@ -79,17 +76,12 @@ add_compile_options(
     -Wno-deprecated-declarations
 )
 
-# Orca's normal top-level build defines these helpers. Android uses a single
-# Release configuration and never runs target binaries while configuring, so
-# the helpers are intentionally no-ops here.
 function(encoding_check target_name)
     message(STATUS "Skipping host encoding check for Android target ${target_name}")
 endfunction()
 function(slic3r_remap_configs)
 endfunction()
 
-# Use Boost's generated package config directly. CMake 3.31 removed the legacy
-# FindBoost module and the Android cross-build must not search host libraries.
 find_package(Boost 1.84.0 EXACT CONFIG REQUIRED COMPONENTS
     system filesystem thread log log_setup locale regex chrono atomic
     date_time iostreams program_options nowide)
@@ -102,6 +94,15 @@ find_package(PNG REQUIRED)
 find_package(cereal REQUIRED)
 find_package(NLopt 1.4 REQUIRED)
 find_package(libnoise REQUIRED)
+
+# Orca links the modern target name, while the bundled cereal package used by
+# the pinned revision may export only include paths. Supply the canonical
+# header-only target without substituting any implementation.
+if(NOT TARGET cereal::cereal)
+    add_library(cereal::cereal INTERFACE IMPORTED)
+    set_target_properties(cereal::cereal PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${ORCA_DEP_PREFIX}/include")
+endif()
 
 add_library(boost_headeronly INTERFACE)
 target_link_libraries(boost_headeronly INTERFACE Boost::headers)
@@ -123,8 +124,6 @@ target_link_libraries(boost_libs INTERFACE
     Boost::nowide
 )
 
-# The preparation script removes only desktop/CAD integration code. Arachne,
-# perimeters, bridges, infill, supports, tree supports and G-code stay upstream.
 add_subdirectory("${ORCA_SOURCE_DIR}/deps_src" "${CMAKE_BINARY_DIR}/orca-deps-src" EXCLUDE_FROM_ALL)
 add_subdirectory("${ORCA_SOURCE_DIR}/src/libslic3r" "${CMAKE_BINARY_DIR}/orca-libslic3r" EXCLUDE_FROM_ALL)
 
