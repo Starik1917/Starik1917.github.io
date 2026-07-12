@@ -96,6 +96,40 @@ public:
 #endif
 ''', encoding="utf-8")
 
+# Flush-volume calculation in libslic3r uses only RGB2HSV from a desktop GUI
+# color helper. The upstream implementation file also pulls wxWidgets, which is
+# not part of the slicing engine. Provide the same mathematical conversion as a
+# header-only Android helper and leave all FDM flush-volume logic untouched.
+color_header = root / "src/slic3r/Utils/ColorSpaceConvert.hpp"
+color_header.parent.mkdir(parents=True, exist_ok=True)
+color_header.write_text(r'''#ifndef slic3r_Utils_ColorSpaceConvert_hpp_
+#define slic3r_Utils_ColorSpaceConvert_hpp_
+
+#include <algorithm>
+#include <cmath>
+
+inline void RGB2HSV(float r, float g, float b, float* h, float* s, float* v)
+{
+    const float cmax = std::max(std::max(r, g), b);
+    const float cmin = std::min(std::min(r, g), b);
+    const float delta = cmax - cmin;
+
+    if (std::abs(delta) < 0.001f)
+        *h = 0.0f;
+    else if (cmax == r)
+        *h = 60.0f * std::fmod((g - b) / delta, 6.0f);
+    else if (cmax == g)
+        *h = 60.0f * ((b - r) / delta + 2.0f);
+    else
+        *h = 60.0f * ((r - g) / delta + 4.0f);
+
+    *s = std::abs(cmax) < 0.001f ? 0.0f : delta / cmax;
+    *v = cmax;
+}
+
+#endif
+''', encoding="utf-8")
+
 core_cmake = root / "src/libslic3r/CMakeLists.txt"
 core = core_cmake.read_text(encoding="utf-8")
 
