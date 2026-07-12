@@ -56,6 +56,14 @@ set(SLIC3R_RESOURCES_DIR "${ORCA_SOURCE_DIR}/resources")
 set(LIBDIR "${ORCA_SOURCE_DIR}/src")
 set(LIBDIR_BIN "${CMAKE_BINARY_DIR}/orca-generated/src")
 
+# Orca's top-level build exposes src globally because bundled support libraries
+# such as admesh include selected libslic3r utilities. Recreate that build
+# contract for the Android-only parent project.
+include_directories(SYSTEM
+    "${ORCA_SOURCE_DIR}/src"
+    "${LIBDIR_BIN}/dev-utils/platform"
+)
+
 add_compile_definitions(
     ORCA_ANDROID_PORT=1
     BBL_RELEASE_TO_PUBLIC=1
