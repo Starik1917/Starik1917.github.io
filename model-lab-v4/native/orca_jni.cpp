@@ -46,7 +46,8 @@ Java_com_starik_modelviewer_OrcaNative_nativeSlice(
             .machine_profile_path = request.value("machineProfilePath", ""),
             .process_profile_path = request.value("processProfilePath", ""),
             .filament_profile_path = request.value("filamentProfilePath", ""),
-            .profile_root = request.value("profileRoot", "")
+            .profile_root = request.value("profileRoot", ""),
+            .config_overrides_json = request.value("configOverrides", json::object()).dump()
         };
 
         const auto result = model_lab::orca::slice_with_orca(native_request, {});
