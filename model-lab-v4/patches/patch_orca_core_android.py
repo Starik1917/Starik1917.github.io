@@ -96,6 +96,22 @@ public:
 #endif
 ''', encoding="utf-8")
 
+# Orca's SVG importer is also backed by OpenCASCADE. Model.cpp references its
+# public entry point, so keep a no-op mesh-import stub and omit only the CAD
+# implementation file. STL/OBJ/3MF handling and all FDM algorithms remain.
+svg_header = root / "src/libslic3r/Format/svg.hpp"
+svg_header.write_text(r'''#pragma once
+#include <string>
+namespace Slic3r {
+class Model;
+inline bool load_svg(const char*, Model*, std::string& message)
+{
+    message = "SVG import is not available in the Android FDM build";
+    return false;
+}
+} // namespace Slic3r
+''', encoding="utf-8")
+
 # Flush-volume calculation in libslic3r uses only RGB2HSV from a desktop GUI
 # color helper. The upstream implementation file also pulls wxWidgets, which is
 # not part of the slicing engine. Provide the same mathematical conversion as a
@@ -135,6 +151,7 @@ core = core_cmake.read_text(encoding="utf-8")
 
 for line, label in [
     ("    Format/STEP.cpp\n", "STEP implementation"),
+    ("    Format/svg.cpp\n", "OpenCASCADE SVG implementation"),
     ("    ObjColorUtils.cpp\n", "OpenCV object color implementation"),
     ("    ObjColorUtils.hpp\n", "OpenCV object color header"),
 ]:
@@ -147,7 +164,7 @@ occt_pattern = re.compile(
     re.DOTALL,
 )
 core, count = occt_pattern.subn(
-    "# Android FDM core: OpenCASCADE/STEP import is intentionally omitted.\n",
+    "# Android FDM core: OpenCASCADE/STEP/SVG import is intentionally omitted.\n",
     core,
     count=1,
 )
