@@ -12,7 +12,6 @@ import org.json.JSONObject;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -122,6 +121,7 @@ public final class OrcaWebBridge {
                 File resources = new File(root, "resources");
                 File profiles = new File(resources, "profiles");
                 File data = new File(root, "data");
+                ensureDirectory(data);
                 request.put("resourcesDir", resources.getAbsolutePath());
                 request.put("profileRoot", profiles.getAbsolutePath());
                 request.put("dataDir", data.getAbsolutePath());
