@@ -146,6 +146,19 @@ inline void RGB2HSV(float r, float g, float b, float* h, float* s, float* v)
 #endif
 ''', encoding="utf-8")
 
+# libc++ does not expose the full stringstream template through transitive
+# includes. Desktop builds happened to get it indirectly; Android correctly
+# requires the standard headers used by LocalesUtils.cpp itself.
+locales_cpp = root / "src/libslic3r/LocalesUtils.cpp"
+locales = locales_cpp.read_text(encoding="utf-8")
+locales = replace_once(
+    locales,
+    "#include <stdexcept>\n",
+    "#include <stdexcept>\n#include <sstream>\n#include <iomanip>\n",
+    "LocalesUtils standard stream headers",
+)
+locales_cpp.write_text(locales, encoding="utf-8")
+
 core_cmake = root / "src/libslic3r/CMakeLists.txt"
 core = core_cmake.read_text(encoding="utf-8")
 
