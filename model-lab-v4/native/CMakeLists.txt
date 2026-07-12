@@ -94,6 +94,20 @@ find_package(PNG REQUIRED)
 find_package(cereal REQUIRED)
 find_package(NLopt 1.4 REQUIRED)
 find_package(libnoise REQUIRED)
+find_package(draco CONFIG REQUIRED)
+
+# Google Draco 1.5.7 exports its static library as draco::draco_static, while
+# this pinned Orca revision links the generic draco::draco target. Preserve the
+# exact Draco implementation and provide only the target-name compatibility
+# alias expected by libslic3r.
+if(NOT TARGET draco::draco)
+    if(NOT TARGET draco::draco_static)
+        message(FATAL_ERROR "The Android Draco package exports neither draco::draco nor draco::draco_static")
+    endif()
+    add_library(model_lab_draco_compat INTERFACE)
+    target_link_libraries(model_lab_draco_compat INTERFACE draco::draco_static)
+    add_library(draco::draco ALIAS model_lab_draco_compat)
+endif()
 
 # Orca links the modern target name, while the bundled cereal package used by
 # the pinned revision may export only include paths. Supply the canonical
