@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <initializer_list>
+#include <limits>
 #include <map>
 #include <set>
 #include <stdexcept>
@@ -65,7 +66,7 @@ void load_profile_recursive(
     std::set<std::string>& loaded)
 {
     const std::string canonical = fs::canonical(profile).string();
-    if (loaded.contains(canonical))
+    if (loaded.find(canonical) != loaded.end())
         return;
     if (!loading.insert(canonical).second)
         throw std::runtime_error("Cyclic Orca profile inheritance at " + canonical);
@@ -91,6 +92,35 @@ void load_profile_recursive(
     loaded.insert(canonical);
 }
 
+std::string override_value(const json& value)
+{
+    if (value.is_string())
+        return value.get<std::string>();
+    if (value.is_boolean())
+        return value.get<bool>() ? "1" : "0";
+    if (value.is_number_integer())
+        return std::to_string(value.get<long long>());
+    if (value.is_number_unsigned())
+        return std::to_string(value.get<unsigned long long>());
+    if (value.is_number_float())
+        return value.dump();
+    throw std::runtime_error("Orca setting override must be a scalar value");
+}
+
+void apply_config_overrides(Slic3r::DynamicPrintConfig& config, const std::string& overrides_json)
+{
+    if (overrides_json.empty())
+        return;
+    const json overrides = json::parse(overrides_json);
+    if (!overrides.is_object())
+        throw std::runtime_error("Orca configOverrides must be a JSON object");
+
+    Slic3r::ConfigSubstitutionContext substitutions(
+        Slic3r::ForwardCompatibilitySubstitutionRule::EnableSilent);
+    for (json::const_iterator item = overrides.begin(); item != overrides.end(); ++item)
+        config.set_deserialize(item.key(), override_value(item.value()), substitutions, false);
+}
+
 void load_profile_stack(Slic3r::DynamicPrintConfig& config, const SliceRequest& request)
 {
     const auto profile_index = index_profiles(fs::path(request.profile_root));
@@ -106,18 +136,38 @@ void load_profile_stack(Slic3r::DynamicPrintConfig& config, const SliceRequest& 
         load_profile_recursive(config, fs::path(*profile), profile_index, loading, loaded);
     }
 
+    apply_config_overrides(config, request.config_overrides_json);
     Slic3r::Preset::normalize(config);
+}
+
+Slic3r::Vec2d printable_area_center(const Slic3r::DynamicPrintConfig& config)
+{
+    const Slic3r::ConfigOptionPoints* area = config.opt<Slic3r::ConfigOptionPoints>("printable_area");
+    if (area == nullptr || area->values.empty())
+        return Slic3r::Vec2d(110.0, 110.0);
+
+    double min_x = std::numeric_limits<double>::max();
+    double min_y = std::numeric_limits<double>::max();
+    double max_x = std::numeric_limits<double>::lowest();
+    double max_y = std::numeric_limits<double>::lowest();
+    for (const Slic3r::Vec2d& point : area->values) {
+        min_x = std::min(min_x, point.x());
+        min_y = std::min(min_y, point.y());
+        max_x = std::max(max_x, point.x());
+        max_y = std::max(max_y, point.y());
+    }
+    return Slic3r::Vec2d((min_x + max_x) * 0.5, (min_y + max_y) * 0.5);
 }
 
 void validate_request(const SliceRequest& request)
 {
-    for (const auto& [label, value] : std::initializer_list<std::pair<const char*, const std::string*>>{
+    for (const auto& pair : std::initializer_list<std::pair<const char*, const std::string*> >{
             {"model", &request.model_path},
             {"output G-code", &request.output_gcode_path},
             {"resources", &request.resources_dir},
             {"profile root", &request.profile_root}}) {
-        if (value->empty())
-            throw std::runtime_error(std::string("Missing ") + label + " path");
+        if (pair.second->empty())
+            throw std::runtime_error(std::string("Missing ") + pair.first + " path");
     }
     if (!fs::is_regular_file(request.model_path))
         throw std::runtime_error("Model file does not exist: " + request.model_path);
@@ -147,17 +197,19 @@ SliceResult slice_with_orca(const SliceRequest& request, const ProgressCallback&
         if (model.objects.empty())
             throw std::runtime_error("The STL contains no printable objects");
 
+        model.add_default_instances();
+        model.center_instances_around_point(printable_area_center(config));
+        model.adjust_min_z();
+
         Slic3r::Print print;
         for (Slic3r::ModelObject* object : model.objects) {
-            if (object->instances.empty())
-                object->add_instance();
             object->ensure_on_bed();
             print.auto_assign_extruders(object);
         }
 
         print.set_status_callback([&progress](const Slic3r::PrintBase::SlicingStatus& status) {
             if (progress && status.percent >= 0)
-                progress(std::clamp(status.percent, 0, 100), status.text);
+                progress(std::max(0, std::min(status.percent, 100)), status.text);
         });
 
         print.apply(model, config);
