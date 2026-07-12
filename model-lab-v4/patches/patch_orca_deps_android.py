@@ -16,6 +16,28 @@ def remove_once(block: str, label: str) -> None:
     text = text.replace(block, f"# Android port: omitted desktop-only dependency ({label})\n", 1)
 
 
+# Orca's dependency helper forwards the Android toolchain file to nested CMake
+# projects, but not the selected ABI/API/STL. The NDK then falls back to its
+# default 32-bit ARM ABI, which produced 32-bit Boost packages inside an
+# arm64-v8a build. Forward the complete Android target tuple to every nested
+# dependency project.
+android_toolchain_anchor = """            -DCMAKE_TOOLCHAIN_FILE:STRING=${CMAKE_TOOLCHAIN_FILE}
+            -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
+"""
+android_toolchain_replacement = """            -DCMAKE_TOOLCHAIN_FILE:STRING=${CMAKE_TOOLCHAIN_FILE}
+            -DCMAKE_SYSTEM_NAME:STRING=Android
+            -DCMAKE_ANDROID_NDK:PATH=${CMAKE_ANDROID_NDK}
+            -DCMAKE_ANDROID_ARCH_ABI:STRING=${CMAKE_ANDROID_ARCH_ABI}
+            -DCMAKE_SYSTEM_VERSION:STRING=${CMAKE_SYSTEM_VERSION}
+            -DANDROID_ABI:STRING=${ANDROID_ABI}
+            -DANDROID_PLATFORM:STRING=${ANDROID_PLATFORM}
+            -DANDROID_STL:STRING=${ANDROID_STL}
+            -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
+"""
+if android_toolchain_anchor not in text:
+    raise RuntimeError("Orca dependency helper Android forwarding anchor not found")
+text = text.replace(android_toolchain_anchor, android_toolchain_replacement, 1)
+
 # These libraries serve the wx/OpenGL desktop application or optional CAD/
 # networking features and are not part of the local FDM toolpath engine.
 remove_once("include(GLEW/GLEW.cmake)\n", "GLEW")
@@ -85,6 +107,31 @@ for entry in [
     text = text.replace(entry, "", 1)
 
 cmake.write_text(text, encoding="utf-8")
+
+# Explicitly select the 64-bit ARM Boost.Context assembly. With the forwarded
+# Android ABI this should also be detected automatically, but setting it here
+# prevents Boost from silently selecting its 32-bit ARM context implementation.
+boost_cmake = root / "deps/Boost/Boost.cmake"
+boost_text = boost_cmake.read_text(encoding="utf-8")
+boost_anchor = """if (APPLE AND CMAKE_OSX_ARCHITECTURES)
+    if (CMAKE_OSX_ARCHITECTURES MATCHES "x86")
+        set(_context_abi_line "-DBOOST_CONTEXT_ABI:STRING=sysv")
+    elseif (CMAKE_OSX_ARCHITECTURES MATCHES "arm")
+        set (_context_abi_line "-DBOOST_CONTEXT_ABI:STRING=aapcs")
+    endif ()
+    set(_context_arch_line "-DBOOST_CONTEXT_ARCHITECTURE:STRING=${CMAKE_OSX_ARCHITECTURES}")
+endif ()
+"""
+boost_replacement = boost_anchor + """
+if (ANDROID)
+    set(_context_abi_line "-DBOOST_CONTEXT_ABI:STRING=aapcs")
+    set(_context_arch_line "-DBOOST_CONTEXT_ARCHITECTURE:STRING=arm64")
+endif ()
+"""
+if boost_anchor not in boost_text:
+    raise RuntimeError("Boost Android architecture anchor not found")
+boost_text = boost_text.replace(boost_anchor, boost_replacement, 1)
+boost_cmake.write_text(boost_text, encoding="utf-8")
 
 # OpenSSL's upstream dependency recipe treats every non-Apple cross build as
 # Linux and invokes `./config linux-aarch64`. OpenSSL then detects the x86_64
@@ -179,4 +226,4 @@ if "        no-tests\n" not in openssl_text:
     )
 
 openssl_cmake.write_text(openssl_text, encoding="utf-8")
-print("Patched Orca dependency graph and OpenSSL recipe for Android FDM core")
+print("Patched Orca dependencies for Android arm64-v8a FDM core")
