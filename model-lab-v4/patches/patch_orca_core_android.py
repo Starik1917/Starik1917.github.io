@@ -152,6 +152,7 @@ core = core_cmake.read_text(encoding="utf-8")
 for line, label in [
     ("    Format/STEP.cpp\n", "STEP implementation"),
     ("    Format/svg.cpp\n", "OpenCASCADE SVG implementation"),
+    ("    Shape/TextShape.cpp\n", "OpenCASCADE text-shape implementation"),
     ("    ObjColorUtils.cpp\n", "OpenCV object color implementation"),
     ("    ObjColorUtils.hpp\n", "OpenCV object color header"),
 ]:
@@ -164,7 +165,7 @@ occt_pattern = re.compile(
     re.DOTALL,
 )
 core, count = occt_pattern.subn(
-    "# Android FDM core: OpenCASCADE/STEP/SVG import is intentionally omitted.\n",
+    "# Android FDM core: OpenCASCADE/STEP/SVG/text import is intentionally omitted.\n",
     core,
     count=1,
 )
