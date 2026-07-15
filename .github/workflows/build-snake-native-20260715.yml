@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: build/snake-q-native-apk-20260715
 
       - name: Restore Android project
         shell: bash
@@ -67,10 +69,19 @@ jobs:
           unzip -l SnakeQNative-v1.0-arm64.apk | grep -q 'lib/arm64-v8a/libsnakeq.so'
           sha256sum SnakeQNative-v1.0-arm64.apk
 
-      - name: Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: SnakeQNative-APK
           path: SnakeQNative-v1.0-arm64.apk
           if-no-files-found: error
           retention-days: 7
+
+      - name: Publish APK on build branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f SnakeQNative-v1.0-arm64.apk
+          git commit -m "Build Snake Q Native APK" || exit 0
+          git push origin HEAD:build/snake-q-native-apk-20260715
