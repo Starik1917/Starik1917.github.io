@@ -1,0 +1,68 @@
+name: Build Snake Q Native APK
+
+on:
+  push:
+    branches:
+      - build/snake-q-native-apk
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Decode source bundle
+        run: |
+          mkdir -p /tmp/snakeq
+          base64 --decode native-build/SnakeQNative-source.zip.b64 > /tmp/SnakeQNative-source.zip
+          unzip -q /tmp/SnakeQNative-source.zip -d /tmp/snakeq
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK, NDK and CMake
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager \
+            "platforms;android-35" \
+            "build-tools;35.0.0" \
+            "ndk;27.2.12479018" \
+            "cmake;3.22.1"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Build native APK
+        working-directory: /tmp/snakeq
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: Verify APK
+        run: |
+          test -f /tmp/snakeq/app/build/outputs/apk/debug/app-debug.apk
+          cp /tmp/snakeq/app/build/outputs/apk/debug/app-debug.apk SnakeQNative-v1.0-arm64.apk
+          sha256sum SnakeQNative-v1.0-arm64.apk | tee SnakeQNative-v1.0-arm64.sha256
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SnakeQNative-APK
+          path: |
+            SnakeQNative-v1.0-arm64.apk
+            SnakeQNative-v1.0-arm64.sha256
+          if-no-files-found: error
+          retention-days: 7
