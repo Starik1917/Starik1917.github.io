@@ -28,8 +28,21 @@ jobs:
       - name: Restore Android project
         shell: bash
         run: |
+          set -euxo pipefail
+          echo '2819ef3ae30d4a137fb9a57908b10d20a9a97136cedd6dc8d86965bdb1d441d3  snake-q-native-v2/part-00.b64' > expected.sha256
+          echo 'df6778a241b343575107f11f4cc9912541fddedf79a1d978f4f0fe799aa09d93  snake-q-native-v2/part-01.b64' >> expected.sha256
+          echo '4bb9c77b11c1d64abef56ec7e04ece70b7e671a327aee68b7b0607d53a6b1176  snake-q-native-v2/part-02.b64' >> expected.sha256
+          echo 'dd70dcbd745bef0fee88e1893983aa23bb10db7ab39e066342b245193b2f0b51  snake-q-native-v2/part-03.b64' >> expected.sha256
+          echo '645f7705bea201fbc3980b651ce3c6fec043b04987a042d029a5c421bc063989  snake-q-native-v2/part-04.b64' >> expected.sha256
+          echo '711d31a6f60862b6c4f97a243462268536abdbd8372b78dd82456a2c67766bd2  snake-q-native-v2/part-05.b64' >> expected.sha256
+          echo '05d1ff3a2fba0585964e21905f5d2a98cfa779f1370f639ebb29058d31b891e9  snake-q-native-v2/part-06.b64' >> expected.sha256
+          echo '323253b7ad3ac737197a6026f540dae4984d1a41d47eb4a0ab38b14602981836  snake-q-native-v2/part-07.b64' >> expected.sha256
+          wc -c snake-q-native-v2/part-*.b64
+          sha256sum snake-q-native-v2/part-*.b64
+          sha256sum -c expected.sha256
           rm -rf snake-build snake-source.zip
           cat snake-q-native-v2/part-*.b64 | base64 --decode > snake-source.zip
+          echo '1ef43586a0632f8da54a281aeb6915029cb0717a7c877718cdc14f16928cf8c4  snake-source.zip' | sha256sum -c -
           mkdir snake-build
           unzip -q snake-source.zip -d snake-build
 
@@ -54,7 +67,7 @@ jobs:
         shell: bash
         run: yes | sdkmanager --licenses >/dev/null || true
 
-      - name: Install SDK, NK and CMake
+      - name: Install SDK, NDK and CMake
         shell: bash
         run: |
           sdkmanager \
