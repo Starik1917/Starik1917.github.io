@@ -1,0 +1,43 @@
+name: Fix Snake Source Part 05
+
+on:
+  push:
+    branches:
+      - build/snake-q-native-highlights-20260715
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: build/snake-q-native-highlights-20260715
+      - name: Correct corrupted Base64 character
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('snake-q-native-v2/part-05.b64')
+          s = p.read_text()
+          bad = 'LmdyYWRsZFVUCQAD'
+          good = 'LmdyYWRsZVVUCQAD'
+          if bad in s:
+              s = s.replace(bad, good, 1)
+              p.write_text(s)
+          PY
+          echo '711d31a6f60862b6c4f97a243462268536abdbd8372b78dd82456a2c67766bd2  snake-q-native-v2/part-05.b64' | sha256sum -c -
+      - name: Commit corrected source chunk
+        shell: bash
+        run: |
+          if git diff --quiet -- snake-q-native-v2/part-05.b64; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add snake-q-native-v2/part-05.b64
+          git commit -m "Fix Snake highlights source archive chunk"
+          git push origin HEAD:build/snake-q-native-highlights-20260715
