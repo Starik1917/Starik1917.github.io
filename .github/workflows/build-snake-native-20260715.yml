@@ -6,6 +6,9 @@ on:
       - build/snake-q-native-apk-20260715
     paths-ignore:
       - SnakeQNative-v1.0-arm64.apk
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -78,6 +81,7 @@ jobs:
           retention-days: 7
 
       - name: Publish APK on build branch
+        if: github.event_name == 'push'
         shell: bash
         run: |
           git config user.name "github-actions[bot]"
