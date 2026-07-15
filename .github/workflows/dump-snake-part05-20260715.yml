@@ -1,0 +1,26 @@
+name: Dump Snake Source Part 05
+
+on:
+  push:
+    branches:
+      - build/snake-q-native-highlights-20260715
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: build/snake-q-native-highlights-20260715
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Snake-Part-05
+          path: snake-q-native-v2/part-05.b64
+          retention-days: 1
