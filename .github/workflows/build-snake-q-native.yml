@@ -4,10 +4,13 @@ on:
   push:
     branches:
       - build/snake-q-native-apk
+    paths:
+      - native-build/SnakeQNative-source.zip.b64
+      - .github/workflows/build-snake-q-native.yml
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -17,9 +20,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: build/snake-q-native-apk
 
       - name: Decode source bundle
         run: |
+          rm -rf /tmp/snakeq
           mkdir -p /tmp/snakeq
           base64 --decode native-build/SnakeQNative-source.zip.b64 > /tmp/SnakeQNative-source.zip
           unzip -q /tmp/SnakeQNative-source.zip -d /tmp/snakeq
@@ -51,18 +57,33 @@ jobs:
         working-directory: /tmp/snakeq
         run: gradle :app:assembleDebug --stacktrace
 
-      - name: Verify APK
+      - name: Verify and prepare APK
         run: |
-          test -f /tmp/snakeq/app/build/outputs/apk/debug/app-debug.apk
-          cp /tmp/snakeq/app/build/outputs/apk/debug/app-debug.apk SnakeQNative-v1.0-arm64.apk
-          sha256sum SnakeQNative-v1.0-arm64.apk | tee SnakeQNative-v1.0-arm64.sha256
+          APK=/tmp/snakeq/app/build/outputs/apk/debug/app-debug.apk
+          test -f "$APK"
+          mkdir -p native-build/output
+          rm -f native-build/output/SnakeQNative-v1.0-arm64.apk.b64.part-*
+          cp "$APK" /tmp/SnakeQNative-v1.0-arm64.apk
+          sha256sum /tmp/SnakeQNative-v1.0-arm64.apk | awk '{print $1}' > native-build/output/SnakeQNative-v1.0-arm64.sha256
+          stat -c '%s' /tmp/SnakeQNative-v1.0-arm64.apk > native-build/output/SnakeQNative-v1.0-arm64.size
+          base64 -w 0 /tmp/SnakeQNative-v1.0-arm64.apk > /tmp/SnakeQNative-v1.0-arm64.apk.b64
+          split -b 60000 -d -a 3 /tmp/SnakeQNative-v1.0-arm64.apk.b64 native-build/output/SnakeQNative-v1.0-arm64.apk.b64.part-
+          find native-build/output -name 'SnakeQNative-v1.0-arm64.apk.b64.part-*' | wc -l > native-build/output/SnakeQNative-v1.0-arm64.parts
 
-      - name: Upload APK
+      - name: Commit encoded APK output
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add native-build/output
+          git commit -m "Build SnakeQNative APK [skip ci]" || exit 0
+          git push origin HEAD:build/snake-q-native-apk
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: SnakeQNative-APK
           path: |
-            SnakeQNative-v1.0-arm64.apk
-            SnakeQNative-v1.0-arm64.sha256
+            /tmp/SnakeQNative-v1.0-arm64.apk
+            native-build/output/SnakeQNative-v1.0-arm64.sha256
           if-no-files-found: error
           retention-days: 7
