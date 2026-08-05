@@ -10,7 +10,7 @@ on:
 jobs:
   build-and-smoke-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
 
@@ -26,12 +26,20 @@ jobs:
       - name: Build debug APK
         run: gradle -p soundpad :app:assembleDebug --stacktrace
 
+      - name: Upload APK immediately
+        uses: actions/upload-artifact@v4
+        with:
+          name: SoundPad-v5-debug
+          path: soundpad/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
       - name: Boot emulator and verify startup
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 35
+          api-level: 29
           arch: x86_64
-          profile: pixel_6
+          target: default
+          profile: Nexus 6
           disable-animations: true
           script: |
             adb install -r soundpad/app/build/outputs/apk/debug/app-debug.apk
@@ -40,11 +48,3 @@ jobs:
             sleep 3
             adb shell pidof com.starik1917.soundpad2
             adb shell dumpsys activity activities | grep -q 'com.starik1917.soundpad2/.MainActivity'
-
-      - name: Upload APK
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: SoundPad-v5-debug
-          path: soundpad/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
