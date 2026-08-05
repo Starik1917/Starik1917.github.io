@@ -1,0 +1,27 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.starik1917.soundpad2'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.starik1917.soundpad2'
+        minSdk 23
+        targetSdk 35
+        versionCode 5
+        versionName '5.0'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
