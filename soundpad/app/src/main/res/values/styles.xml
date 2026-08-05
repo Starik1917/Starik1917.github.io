@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SoundPad" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:statusBarColor">#09090F</item>
+        <item name="android:navigationBarColor">#09090F</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:colorAccent">#9A7BFF</item>
+    </style>
+
+    <style name="Theme.SoundPad.Splash" parent="Theme.SoundPad">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:windowDisablePreview">false</item>
+    </style>
+</resources>
