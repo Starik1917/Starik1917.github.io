@@ -1,7 +1,7 @@
 name: Temp Build AI Telegram v5 APK
 
 on:
-  pull_request:
+  push:
     branches: [main]
 
 jobs:
@@ -10,6 +10,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: build/aitelegram-v5-no-think-20260807
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
