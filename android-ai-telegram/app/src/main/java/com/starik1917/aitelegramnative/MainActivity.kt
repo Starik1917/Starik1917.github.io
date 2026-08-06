@@ -2,6 +2,7 @@ package com.starik1917.aitelegramnative
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -38,8 +39,8 @@ class MainActivity : Activity() {
     companion object {
         const val ACTION_STATUS = "com.starik1917.aitelegramnative.STATUS"
         private const val PICK_GGUF = 1001
-        private const val MODEL_FILE = "Qwen3-4B-Q4_K_M.gguf"
-        private const val MODEL_URL = "https://huggingface.co/Qwen/Qwen3-4B-GGUF/resolve/main/Qwen3-4B-Q4_K_M.gguf?download=true"
+        private const val MODEL_FILE = "Qwen3-8B-Q4_K_M.gguf"
+        private const val MODEL_URL = "https://huggingface.co/Qwen/Qwen3-8B-GGUF/resolve/main/Qwen3-8B-Q4_K_M.gguf?download=true"
     }
 
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
@@ -53,7 +54,6 @@ class MainActivity : Activity() {
     private lateinit var serviceStatus: TextView
     private lateinit var logView: TextView
     private lateinit var downloadButton: Button
-    private lateinit var startButton: Button
 
     private val statusReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -100,12 +100,12 @@ class MainActivity : Activity() {
         val scroll = ScrollView(this).apply { addView(root) }
 
         root.addView(TextView(this).apply {
-            text = "AI Telegram — Native"
+            text = "AI Telegram — Context v2"
             textSize = 30f
             setTypeface(typeface, Typeface.BOLD)
         })
         root.addView(TextView(this).apply {
-            text = "Локальный llama.cpp • без OpenAI • без WebView/CDN"
+            text = "Нативный llama.cpp • постоянная память чатов • защита от повторов"
             textSize = 15f
             setPadding(0, dp(4), 0, dp(18))
         })
@@ -118,10 +118,10 @@ class MainActivity : Activity() {
         root.addView(modelStatus)
 
         root.addView(button("Выбрать уже скачанный .GGUF") { chooseModel() })
-        downloadButton = button("Скачать Qwen3-4B Q4_K_M (~2,5 ГБ)") { downloadOfficialModel() }
+        downloadButton = button("Скачать Qwen3-8B Q4_K_M (~5,0 ГБ)") { downloadOfficialModel() }
         root.addView(downloadButton)
         root.addView(TextView(this).apply {
-            text = "Можно выбрать любой совместимый GGUF. При выборе через системный проводник файл не отправляется в интернет."
+            text = "Рекомендуется Qwen3-8B Q4_K_M. Старый Qwen3-4B тоже можно оставить — приложение принимает любой совместимый GGUF."
             textSize = 13f
             setPadding(0, dp(6), 0, dp(18))
         })
@@ -137,18 +137,26 @@ class MainActivity : Activity() {
 
         root.addView(section("Как отвечать"))
         promptField = edit("Инструкция для ИИ", singleLine = false).apply {
-            minLines = 6
+            minLines = 7
             gravity = Gravity.TOP
         }
         root.addView(promptField)
 
-        startButton = button("Запустить автоответы") { startAutoReply() }
-        root.addView(startButton)
+        root.addView(button("Запустить автоответы") { startAutoReply() })
         root.addView(button("Остановить") {
             stopService(Intent(this, AutoReplyService::class.java))
             serviceStatus.text = "Остановлен"
             appendLog("Сервис остановлен вручную")
         })
+
+        root.addView(section("Память переписки"))
+        root.addView(TextView(this).apply {
+            text = "Приложение хранит до 120 последних сообщений каждого чата локально в SQLite и после перезапуска продолжает помнить контекст. Telegram Bot API не отдаёт старую историю, которая была до получения ботом обновлений."
+            textSize = 13f
+            setPadding(0, 0, 0, dp(8))
+        })
+        root.addView(button("Очистить память выбранного чата") { showClearChatDialog() })
+        root.addView(button("Очистить память ВСЕХ чатов") { confirmClearAll() })
 
         root.addView(button("Разрешить работу в фоне (OriginOS)") { requestBackgroundAllowance() })
         root.addView(TextView(this).apply {
@@ -177,7 +185,7 @@ class MainActivity : Activity() {
         promptField.setText(
             prefs.getString(
                 "persona",
-                "Пиши по-русски естественно, коротко и по делу, как обычный человек в личной переписке. Отвечай от первого лица владельца аккаунта. Не говори, что ты ИИ или бот. Не выдумывай факты обо мне: если информации не хватает, задай короткий уточняющий вопрос. Не пиши длинные объяснения без необходимости."
+                "Пиши по-русски естественно, коротко и по делу, как обычный человек в личной переписке. Отвечай от первого лица владельца аккаунта. Учитывай смысл всей переписки, а не только последнее сообщение. Не повторяй дословно ни собеседника, ни свои предыдущие ответы. Если человек пишет «а?», «что?», «в смысле?», объясни предыдущую мысль другими словами. Не выдумывай факты обо мне: если информации не хватает, задай короткий уточняющий вопрос."
             )
         )
         refreshModelStatus()
@@ -221,16 +229,16 @@ class MainActivity : Activity() {
             return
         }
         val file = File(dir, MODEL_FILE)
-        if (file.exists() && file.length() > 2_000_000_000L) {
+        if (file.exists() && file.length() > 4_000_000_000L) {
             prefs.edit().putString("model_path", file.absolutePath).remove("model_uri").apply()
             refreshModelStatus()
-            appendLog("Готовая модель уже найдена: ${formatBytes(file.length())}")
+            appendLog("Готовая Qwen3-8B уже найдена: ${formatBytes(file.length())}")
             return
         }
 
         downloadButton.isEnabled = false
-        serviceStatus.text = "Скачивание модели…"
-        appendLog("Запускаю системную загрузку Qwen3-4B Q4_K_M")
+        serviceStatus.text = "Скачивание Qwen3-8B…"
+        appendLog("Запускаю системную загрузку Qwen3-8B Q4_K_M")
 
         uiScope.launch {
             try {
@@ -238,7 +246,7 @@ class MainActivity : Activity() {
                     if (file.exists()) file.delete()
                     val dm = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
                     val request = DownloadManager.Request(Uri.parse(MODEL_URL))
-                        .setTitle("Qwen3-4B Q4_K_M")
+                        .setTitle("Qwen3-8B Q4_K_M")
                         .setDescription("Локальная модель для AI Telegram")
                         .setAllowedOverMetered(true)
                         .setAllowedOverRoaming(false)
@@ -270,13 +278,13 @@ class MainActivity : Activity() {
                     }
                 }
 
-                if (!file.exists() || file.length() < 1_000_000_000L) {
-                    throw IllegalStateException("Файл модели не появился после загрузки")
+                if (!file.exists() || file.length() < 4_000_000_000L) {
+                    throw IllegalStateException("Файл Qwen3-8B не появился или скачался не полностью")
                 }
                 prefs.edit().putString("model_path", file.absolutePath).remove("model_uri").apply()
                 refreshModelStatus()
-                serviceStatus.text = "Модель скачана"
-                appendLog("Модель скачана: ${formatBytes(file.length())}")
+                serviceStatus.text = "Qwen3-8B скачана"
+                appendLog("Qwen3-8B скачана: ${formatBytes(file.length())}")
             } catch (e: Exception) {
                 serviceStatus.text = "Ошибка загрузки модели"
                 appendLog("Ошибка загрузки: ${e.message}")
@@ -301,7 +309,40 @@ class MainActivity : Activity() {
         val intent = Intent(this, AutoReplyService::class.java)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) startForegroundService(intent) else startService(intent)
         serviceStatus.text = "Запуск…"
-        appendLog("Запускаю нативный сервис")
+        appendLog("Запускаю нативный сервис Context v2")
+    }
+
+    private fun showClearChatDialog() {
+        val db = ChatDb(this)
+        val chats = try { db.recentChats(30) } finally { db.close() }
+        if (chats.isEmpty()) {
+            toast("Сохранённых чатов пока нет")
+            return
+        }
+        val labels = chats.map { "${it.second}  •  ${it.first}" }.toTypedArray()
+        AlertDialog.Builder(this)
+            .setTitle("Очистить память какого чата?")
+            .setItems(labels) { _, which ->
+                val target = chats[which]
+                ChatDb(this).use { it.clearChat(target.first) }
+                appendLog("Очищена память чата ${target.second}")
+                toast("Память чата очищена")
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
+    }
+
+    private fun confirmClearAll() {
+        AlertDialog.Builder(this)
+            .setTitle("Очистить всю память?")
+            .setMessage("Будет удалена только локальная история AI Telegram. Сообщения в самом Telegram не удалятся.")
+            .setPositiveButton("Очистить") { _, _ ->
+                ChatDb(this).use { it.clearAll() }
+                appendLog("Очищена память всех чатов")
+                toast("Локальная память очищена")
+            }
+            .setNegativeButton("Отмена", null)
+            .show()
     }
 
     private fun refreshModelStatus() {
