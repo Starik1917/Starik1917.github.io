@@ -23,6 +23,16 @@ jobs:
         with:
           gradle-version: "8.9"
 
+      - name: Patch leaked model control tokens
+        run: |
+          python3 scripts/patch_no_think.py
+          SRC=android-ai-telegram/app/src/main/java/com/starik1917/aitelegramnative/AutoReplyService.kt
+          if grep -n '/no_think' "$SRC"; then
+            echo 'ERROR: /no_think still present in runtime source'
+            exit 1
+          fi
+          grep -n 'containsControlToken' "$SRC"
+
       - name: Build debug APK
         run: gradle -p android-ai-telegram :app:assembleDebug --stacktrace
 
@@ -33,12 +43,12 @@ jobs:
           test -f "$APK"
           unzip -l "$APK" | grep 'lib/arm64-v8a/libllama_jni.so'
           sha256sum "$APK" | tee android-ai-telegram/app/build/outputs/apk/debug/SHA256.txt
-          cp "$APK" android-ai-telegram/app/build/outputs/apk/debug/AI-Telegram-Native-Vivo-X200-Ultra.apk
+          cp "$APK" android-ai-telegram/app/build/outputs/apk/debug/AI-Telegram-v5-NoThink-Fix.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: AI-Telegram-Native-Vivo-X200-Ultra
+          name: AI-Telegram-v5-NoThink-Fix
           path: |
-            android-ai-telegram/app/build/outputs/apk/debug/AI-Telegram-Native-Vivo-X200-Ultra.apk
+            android-ai-telegram/app/build/outputs/apk/debug/AI-Telegram-v5-NoThink-Fix.apk
             android-ai-telegram/app/build/outputs/apk/debug/SHA256.txt
           retention-days: 7
