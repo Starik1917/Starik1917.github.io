@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,6 +15,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: build/aitelegram-v5-no-think-20260807
+          fetch-depth: 0
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -31,18 +35,21 @@ jobs:
           grep -n 'containsControlToken' "$SRC"
       - name: Build debug APK
         run: gradle -p android-ai-telegram :app:assembleDebug --stacktrace
-      - name: Verify APK
+      - name: Verify and encode APK
         run: |
           set -e
           APK=android-ai-telegram/app/build/outputs/apk/debug/app-debug.apk
           test -f "$APK"
           unzip -l "$APK" | grep 'lib/arm64-v8a/libllama_jni.so'
-          sha256sum "$APK" | tee android-ai-telegram/app/build/outputs/apk/debug/SHA256.txt
-          cp "$APK" android-ai-telegram/app/build/outputs/apk/debug/AI-Telegram-v5-NoThink-Fix.apk
-      - uses: actions/upload-artifact@v4
-        with:
-          name: AI-Telegram-v5-NoThink-Fix
-          path: |
-            android-ai-telegram/app/build/outputs/apk/debug/AI-Telegram-v5-NoThink-Fix.apk
-            android-ai-telegram/app/build/outputs/apk/debug/SHA256.txt
-          retention-days: 7
+          mkdir -p build-output
+          cp "$APK" build-output/AI-Telegram-v5-NoThink-Fix.apk
+          sha256sum build-output/AI-Telegram-v5-NoThink-Fix.apk > build-output/SHA256.txt
+          base64 -w 0 build-output/AI-Telegram-v5-NoThink-Fix.apk > build-output/AI-Telegram-v5-NoThink-Fix.apk.b64
+          rm build-output/AI-Telegram-v5-NoThink-Fix.apk
+      - name: Publish encoded build to branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add build-output/AI-Telegram-v5-NoThink-Fix.apk.b64 build-output/SHA256.txt
+          git commit -m "Publish AI Telegram v5 APK build" || exit 0
+          git push origin HEAD:build/aitelegram-v5-no-think-20260807
