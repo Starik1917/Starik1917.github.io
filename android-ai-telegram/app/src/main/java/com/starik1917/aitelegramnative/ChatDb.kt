@@ -6,6 +6,10 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 class ChatDb(context: Context) : SQLiteOpenHelper(context, "chat_memory.db", null, 2) {
+    companion object {
+        private const val MAX_INCOMING_AGE_MS = 60L * 60L * 1000L
+    }
+
     data class Row(
         val chatId: Long,
         val messageId: Long,
@@ -55,6 +59,17 @@ class ChatDb(context: Context) : SQLiteOpenHelper(context, "chat_memory.db", nul
     }
 
     fun last(chatId: Long, limit: Int = 50): List<Row> {
+        val latestIncomingTs = readableDatabase.rawQuery(
+            "SELECT ts FROM messages WHERE chat_id=? AND mine=0 ORDER BY ts DESC, id DESC LIMIT 1",
+            arrayOf(chatId.toString()),
+        ).use { c ->
+            if (c.moveToFirst()) c.getLong(0) else 0L
+        }
+
+        if (latestIncomingTs > 0L && System.currentTimeMillis() - latestIncomingTs >= MAX_INCOMING_AGE_MS) {
+            return emptyList()
+        }
+
         val out = ArrayList<Row>()
         readableDatabase.query(
             "messages",
