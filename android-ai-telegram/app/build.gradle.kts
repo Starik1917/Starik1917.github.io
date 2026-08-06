@@ -11,8 +11,8 @@ android {
         applicationId = "com.starik1917.aitelegramnative"
         minSdk = 24
         targetSdk = 35
-        versionCode = 5
-        versionName = "2.0-context"
+        versionCode = 6
+        versionName = "2.1-no-think-fix"
 
         ndk {
             abiFilters += listOf("arm64-v8a")
