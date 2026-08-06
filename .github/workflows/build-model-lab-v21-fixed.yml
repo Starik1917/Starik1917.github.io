@@ -1,0 +1,136 @@
+name: Build Model Lab 3D v2.2 verified
+
+on:
+  push:
+    branches:
+      - build/model-lab-v2-2
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore and patch source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat \
+            model-lab-v2/payload/part00a.b64 \
+            model-lab-v2/payload/part00b.b64 \
+            model-lab-v2/payload/part01.b64 \
+            model-lab-v2/payload/part02a.b64 \
+            model-lab-v2/payload/part02b.b64 \
+            model-lab-v2/payload/part03.b64 \
+            model-lab-v2/payload/part04.b64 \
+            model-lab-v2/payload/part05.b64 \
+            model-lab-v2/payload/part06.b64 \
+            model-lab-v2/payload/part07.b64 \
+            model-lab-v2/payload/part08.b64 \
+            | base64 --decode > /tmp/model-lab-v2.zip
+          echo "1be51639093fee26dfb24a32a76f7faf2520ec161593f3ea5f1e597342e0688b  /tmp/model-lab-v2.zip" | sha256sum --check
+          mkdir -p build-src
+          unzip -q /tmp/model-lab-v2.zip -d build-src
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          workflow = Path('.github/workflows/build-model-lab-v2.yml').read_text()
+          match = re.search(r"printf '%s' '([A-Za-z0-9+/=]+)'", workflow)
+          if not match:
+              raise SystemExit('Embedded v2.1 patch was not found')
+          Path('/tmp/model-lab-v2.1.patch.gz.b64').write_text(match.group(1))
+          PY
+          base64 --decode /tmp/model-lab-v2.1.patch.gz.b64 | gzip -d > /tmp/model-lab-v2.1.patch
+          patch -d build-src -p1 < /tmp/model-lab-v2.1.patch
+          base64 --decode model-lab-v2/v2.2.patch.gz.b64 | gzip -d > /tmp/model-lab-v2.2.patch
+          patch -d build-src -p1 < /tmp/model-lab-v2.2.patch
+          node --check build-src/web/src/main.js
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install web dependencies
+        working-directory: build-src
+        run: npm install --no-audit --no-fund
+
+      - name: Bundle offline application
+        working-directory: build-src
+        run: npm run build:web
+
+      - name: Verify responsive application
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build-src/app/src/main/assets/index.html
+          grep -q "3D-модели и печать" build-src/app/src/main/assets/index.html
+          grep -q "Adventurer 5M" build-src/app/src/main/assets/index.html
+          grep -q "supportTypeSelect" build-src/app/src/main/assets/index.html
+          grep -q "settings-page-in" build-src/app/src/main/assets/style.css
+          grep -q "versionName '2.2.0'" build-src/app/build.gradle
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Build installable APK
+        working-directory: build-src
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build-src/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -t "$APK"
+          unzip -l "$APK" | grep -q "assets/index.html"
+          cp "$APK" ModelLab3D-v2.2.apk
+          sha256sum ModelLab3D-v2.2.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v2.2-APK-verified
+          path: ModelLab3D-v2.2.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Package source
+        shell: bash
+        run: |
+          rm -rf build-src/node_modules build-src/app/build
+          cd build-src
+          zip -qr ../ModelLab3D-v2.2-source.zip .
+
+      - name: Upload source
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v2.2-source-verified
+          path: ModelLab3D-v2.2-source.zip
+          if-no-files-found: error
+          retention-days: 7

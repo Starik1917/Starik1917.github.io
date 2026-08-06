@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#111318" />
+  <title>Model Lab 3D</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body data-theme="dark">
+  <div class="boot-overlay" id="bootOverlay" aria-live="polite">
+    <div class="rubik-loader" id="bootRubik" aria-hidden="true"></div>
+    <strong id="bootTitle">Model Lab 3D</strong>
+    <span id="bootDetail">Подготавливаем рабочее пространство</span>
+  </div>
+
+  <div class="app-shell">
+    <section class="screen home-screen is-active" id="homeScreen" aria-label="Главный экран">
+      <div class="home-backdrop" aria-hidden="true"><i></i><i></i><i></i></div>
+      <header class="home-topbar">
+        <div class="brand-lockup">
+          <div class="app-symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 2 21 7v10l-9 5-9-5V7l9-5Zm0 2.3L5.1 8.1 12 12l6.9-3.9L12 4.3Zm-7 5.5v6l6 3.3v-6L5 9.8Zm14 0-6 3.3v6l6-3.3v-6Z"/></svg>
+          </div>
+          <div><strong>Model Lab 3D</strong><small>Локальная мастерская</small></div>
+        </div>
+        <button class="icon-button tonal" id="homeThemeButton" aria-label="Сменить тему">
+          <svg viewBox="0 0 24 24"><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-14V2m0 20v-2m8-8h2M2 12h2m13.66-5.66 1.42-1.42M4.92 19.08l1.42-1.42m11.32 0 1.42 1.42M4.92 4.92l1.42 1.42"/></svg>
+        </button>
+      </header>
+
+      <main class="home-content">
+        <section class="home-intro">
+          <h1>3D-модели и печать</h1>
+          <p>Просматривай, измеряй и подготавливай модели прямо на телефоне.</p>
+        </section>
+
+        <section class="feature-section" aria-label="Основные режимы">
+          <div class="section-heading"><h2>Что сделать?</h2><span>Всё работает офлайн</span></div>
+          <div class="mode-list">
+            <button class="mode-card slicer-card primary-mode" id="chooseSlicerButton">
+              <span class="mode-icon slicer-icon"><svg viewBox="0 0 32 32"><path d="M6 5h20v4H6V5Zm2 6h16v3H8v-3Zm2 5h12v3H10v-3Zm2 5h8v3h-8v-3Zm3 5h2v2h-2v-2Z"/></svg></span>
+              <span class="mode-copy"><small>Подготовка к печати</small><strong>Нарезать модель</strong><span>Adventurer 5M, поддержки, слои и G-code</span></span>
+              <span class="profile-pill">AD5M</span>
+              <span class="mode-arrow"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7-1.4-1.4 5.6-5.6-5.6-5.6L9 5Z"/></svg></span>
+            </button>
+
+            <button class="mode-card viewer-card" id="chooseViewerButton">
+              <span class="mode-icon viewer-icon"><svg viewBox="0 0 32 32"><path d="m16 3 12 7v12l-12 7-12-7V10l12-7Zm0 3.2L7.2 11 16 16l8.8-5L16 6.2ZM7 14v6.3l7.5 4.2v-6.3L7 14Zm18 0-7.5 4.2v6.3l7.5-4.2V14Z"/></svg></span>
+              <span class="mode-copy"><small>Просмотр</small><strong>Открыть 3D-модель</strong><span>Линейка, материалы, каркас и анимации</span></span>
+              <span class="mode-arrow"><svg viewBox="0 0 24 24"><path d="m9 5 7 7-7 7-1.4-1.4 5.6-5.6-5.6-5.6L9 5Z"/></svg></span>
+            </button>
+          </div>
+        </section>
+
+        <section class="quick-section" aria-label="Быстрый доступ">
+          <div class="section-heading"><h2>Быстрый доступ</h2></div>
+          <div class="quick-grid">
+            <article class="quick-card profile-quick">
+              <span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v4H4V4Zm2 6h12v3H6v-3Zm2 5h8v3H8v-3Zm3 5h2v2h-2v-2Z"/></svg></span>
+              <small>Профиль принтера</small><strong>Adventurer 5M</strong><span>220 × 220 × 220 мм</span>
+            </article>
+            <article class="quick-card offline-quick">
+              <span class="quick-icon"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 15-4-4 1.4-1.4 2.6 2.6 5.6-5.6L18 10l-7 7Z"/></svg></span>
+              <small>Приватность</small><strong>Без облака</strong><span>Файлы остаются на устройстве</span>
+            </article>
+          </div>
+        </section>
+      </main>
+    </section>
+
+    <section class="screen workspace-screen" id="workspaceScreen" aria-label="Рабочее пространство">
+      <header class="workspace-topbar">
+        <button class="icon-button" id="backButton" aria-label="Назад">
+          <svg viewBox="0 0 24 24"><path d="m20 11-12.2.02 5.6-5.6L12 4l-8 8 8 8 1.4-1.4-5.6-5.6H20v-2Z"/></svg>
+        </button>
+        <div class="workspace-title">
+          <small id="workspaceEyebrow">Просмотр</small>
+          <strong id="workspaceTitle">3D-модель</strong>
+        </div>
+        <button class="icon-button" id="workspaceThemeButton" aria-label="Сменить тему">
+          <svg viewBox="0 0 24 24"><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12Zm0-14V2m0 20v-2m8-8h2M2 12h2m13.66-5.66 1.42-1.42M4.92 19.08l1.42-1.42m11.32 0 1.42 1.42M4.92 4.92l1.42 1.42"/></svg>
+        </button>
+        <button class="icon-button" id="moreButton" aria-label="Информация">
+          <svg viewBox="0 0 24 24"><path d="M11 17h2v-6h-2v6Zm1-15a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1 7h2V7h-2v2Z"/></svg>
+        </button>
+      </header>
+
+      <main class="canvas-area" id="canvasArea">
+        <div id="canvasHost" aria-label="Область 3D"></div>
+        <div class="canvas-vignette"></div>
+
+        <section class="empty-state" id="emptyState">
+          <div class="empty-wire-cube" aria-hidden="true"><span></span><span></span><span></span></div>
+          <div class="empty-copy">
+            <small id="emptyEyebrow">3D-просмотр</small>
+            <h2 id="emptyTitle">Открой модель</h2>
+            <p id="emptyText">Выбери файл или ZIP с текстурами.</p>
+          </div>
+          <button class="filled-button" id="emptyOpenButton">
+            <svg viewBox="0 0 24 24"><path d="M19 20H5a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2h5l2 2h7c1.1 0 2 .9 2 2v10a2 2 0 0 1-2 2Zm0-12h-7.8l-2-2H5v12h14V8Z"/></svg>
+            Выбрать модель
+          </button>
+          <button class="text-button" id="formatsButton">Поддерживаемые форматы</button>
+        </section>
+
+        <button class="model-chip" id="modelChip" hidden>
+          <span class="format-badge" id="formatBadge">STL</span>
+          <span class="model-chip-copy"><strong id="modelName">model.stl</strong><small id="modelSummary">—</small></span>
+          <svg viewBox="0 0 24 24"><path d="m7.4 8.6 4.6 4.6 4.6-4.6L18 10l-6 6-6-6 1.4-1.4Z"/></svg>
+        </button>
+
+        <div class="gesture-hint" id="gestureHint" hidden>Одним пальцем — вращение · двумя — масштаб</div>
+
+        <button class="measure-fab" id="measureButton" aria-pressed="false" hidden>
+          <svg viewBox="0 0 24 24"><path d="M3 17.25 17.25 3 21 6.75 6.75 21 3 17.25Zm2.83.01.91.91 1.42-1.42-.91-.91 1.42-1.42 1.61 1.61 1.42-1.42-.91-.91 1.42-1.42 1.61 1.61 1.42-1.42-.91-.91 1.42-1.42.91.91 1.42-1.42-1.92-1.92L5.83 17.26Z"/></svg>
+          <span>Линейка</span>
+        </button>
+
+        <section class="measure-card" id="measureCard" hidden>
+          <div class="measure-copy"><span>Расстояние</span><strong id="measureValue">Первая точка</strong><small id="measureDetail">Коснись поверхности модели</small></div>
+          <button class="unit-button" id="measureUnitButton">Авто</button>
+          <button class="icon-button mini" id="measureClearButton" aria-label="Очистить"><svg viewBox="0 0 24 24"><path d="M7 21c-.55 0-1.02-.2-1.41-.59A1.93 1.93 0 0 1 5 19V6H4V4h5V3h6v1h5v2h-1v13c0 .55-.2 1.02-.59 1.41-.39.39-.86.59-1.41.59H7Zm10-15H7v13h10V6Zm-8 11h2V8H9v9Zm4 0h2V8h-2v9Z"/></svg></button>
+        </section>
+
+        <section class="slicer-status-card" id="slicerStatusCard" hidden>
+          <div><small id="slicerStatusLabel">Стол</small><strong id="slicerStatusValue">220 × 220 × 220 мм</strong></div>
+          <button class="tonal-button compact" id="quickSettingsButton">Параметры</button>
+        </section>
+
+        <section class="layer-preview-card" id="layerPreviewCard" hidden>
+          <div class="layer-preview-header"><span>Предпросмотр слоя</span><strong id="layerPreviewValue">1 / 1</strong></div>
+          <input id="layerSlider" type="range" min="0" max="0" value="0" />
+          <div class="layer-legend"><span><i class="legend-wall"></i>Стенки</span><span><i class="legend-infill"></i>Заполнение</span><span><i class="legend-support"></i>Поддержки</span></div>
+        </section>
+      </main>
+
+      <nav class="bottom-toolbar viewer-toolbar" id="viewerToolbar">
+        <button class="tool-button" id="gridButton" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4V4Zm2 2v3h3V6H6Zm5 0v3h3V6h-3Zm5 0v3h2V6h-2ZM6 11v3h3v-3H6Zm5 0v3h3v-3h-3Zm5 0v3h2v-3h-2ZM6 16v2h3v-2H6Zm5 0v2h3v-2h-3Zm5 0v2h2v-2h-2Z"/></svg><span>Сетка</span></button>
+        <button class="tool-button" id="wireframeButton" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="m12 2 9 5v10l-9 5-9-5V7l9-5Zm0 2.3L6.1 7.6 12 11l5.9-3.4L12 4.3ZM5 9.3v6.5l6 3.4v-6.6L5 9.3Zm14 0-6 3.3v6.6l6-3.4V9.3Z"/></svg><span>Каркас</span></button>
+        <button class="main-fab" id="openButton" aria-label="Открыть модель"><svg viewBox="0 0 24 24"><path d="M19 20H5a2 2 0 0 1-2-2V6c0-1.1.9-2 2-2h5l2 2h7c1.1 0 2 .9 2 2v10a2 2 0 0 1-2 2Zm0-12h-7.8l-2-2H5v12h14V8Z"/></svg></button>
+        <button class="tool-button" id="rotateButton" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 4V1l4 4-4 4V6a6 6 0 1 0 5.7 7.8l1.9.6A8 8 0 1 1 12 4Z"/></svg><span>Авто</span></button>
+        <button class="tool-button" id="resetButton"><svg viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.3 4H3l3.5-3.5L10 9H7.8A5 5 0 1 0 12 7V5Z"/></svg><span>Сброс</span></button>
+      </nav>
+
+      <nav class="bottom-toolbar slicer-toolbar" id="slicerToolbar" hidden>
+        <button class="tool-button" id="transformButton"><svg viewBox="0 0 24 24"><path d="M13 3h8v8h-2V6.4l-5.6 5.6-1.4-1.4L17.6 5H13V3ZM3 13h2v4.6l5.6-5.6 1.4 1.4L6.4 19H11v2H3v-8Z"/></svg><span>Трансформ.</span></button>
+        <button class="tool-button" id="orientButton"><svg viewBox="0 0 24 24"><path d="M12 2 4 6v12l8 4 8-4V6l-8-4Zm0 2.2L17.6 7 12 9.8 6.4 7 12 4.2ZM6 9l5 2.5v7.9l-5-2.5V9Zm7 10.4v-7.9L18 9v7.9l-5 2.5Z"/></svg><span>Ориентация</span></button>
+        <button class="main-fab slice-fab" id="sliceButton" aria-label="Нарезать модель"><svg viewBox="0 0 24 24"><path d="M4 5h16v3H4V5Zm2 5h12v3H6v-3Zm2 5h8v3H8v-3Zm3 5h2v2h-2v-2Z"/></svg></button>
+        <button class="tool-button" id="printSettingsButton"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.7 7.7 0 0 0 .05-1 7.7 7.7 0 0 0-.05-1l2.1-1.65-2-3.46-2.52 1.02a7.5 7.5 0 0 0-1.73-1L14.87 3h-4l-.38 2.91a7.5 7.5 0 0 0-1.73 1L6.24 5.89l-2 3.46L6.34 11a7.7 7.7 0 0 0-.05 1 7.7 7.7 0 0 0 .05 1l-2.1 1.65 2 3.46 2.52-1.02a7.5 7.5 0 0 0 1.73 1L10.87 21h4l.38-2.91a7.5 7.5 0 0 0 1.73-1l2.52 1.02 2-3.46L19.4 13ZM12.87 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg><span>Профиль</span></button>
+        <button class="tool-button" id="exportModelButton"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z"/></svg><span>STL</span></button>
+      </nav>
+
+      <input id="fileInput" type="file" hidden multiple accept=".glb,.gltf,.stl,.obj,.mtl,.fbx,.ply,.dae,.3mf,.3ds,.amf,.usdz,.zip,.bin,.png,.jpg,.jpeg,.webp,.ktx2,.tga,.bmp,.exr,.hdr" />
+    </section>
+  </div>
+
+  <div class="scrim" id="scrim" hidden></div>
+
+  <section class="bottom-sheet" id="formatsSheet" hidden role="dialog" aria-modal="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div><small>Локальные загрузчики</small><h2>Форматы моделей</h2></div><button class="icon-button" data-close-sheet><svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg></button></div>
+    <div class="format-grid"><span>GLB</span><span>GLTF</span><span>STL</span><span>OBJ + MTL</span><span>FBX</span><span>PLY</span><span>DAE</span><span>3MF</span><span>3DS</span><span>AMF</span><span>USDZ</span><span>ZIP</span></div>
+    <p class="sheet-note">Для моделей с отдельными текстурами выбери связанные файлы вместе или положи их в ZIP с сохранением папок.</p>
+  </section>
+
+  <section class="bottom-sheet" id="infoSheet" hidden role="dialog" aria-modal="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div><small id="infoFormat">Формат</small><h2 id="infoName">Модель</h2></div><button class="icon-button" data-close-sheet><svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg></button></div>
+    <div class="info-list"><div><span>Размер файла</span><strong id="infoFileSize">—</strong></div><div><span>Габариты</span><strong id="infoDimensions">—</strong></div><div><span>Вершины</span><strong id="infoVertices">—</strong></div><div><span>Треугольники</span><strong id="infoTriangles">—</strong></div><div><span>Объекты</span><strong id="infoObjects">—</strong></div></div>
+  </section>
+
+  <section class="bottom-sheet tall-sheet" id="transformSheet" hidden role="dialog" aria-modal="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div><small>Подготовка модели</small><h2>Положение и размер</h2></div><button class="icon-button" data-close-sheet><svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg></button></div>
+    <div class="segmented-control" id="transformTabs"><button data-tab="move" class="is-selected">Перемещение</button><button data-tab="rotate">Поворот</button><button data-tab="scale">Масштаб</button></div>
+    <div class="transform-panel is-active" data-panel="move">
+      <label class="range-field"><span><b>X на столе</b><output id="positionXValue">0 мм</output></span><input id="positionXInput" type="range" min="-110" max="110" step="0.1" value="0" /></label>
+      <label class="range-field"><span><b>Y на столе</b><output id="positionYValue">0 мм</output></span><input id="positionYInput" type="range" min="-110" max="110" step="0.1" value="0" /></label>
+      <div class="sheet-actions"><button class="outlined-button" id="centerModelButton">По центру</button><button class="filled-button" id="dropModelButton">Поставить на стол</button></div>
+    </div>
+    <div class="transform-panel" data-panel="rotate">
+      <label class="range-field"><span><b>Поворот X</b><output id="rotationXValue">0°</output></span><input id="rotationXInput" type="range" min="-180" max="180" step="1" value="0" /></label>
+      <label class="range-field"><span><b>Поворот Y</b><output id="rotationYValue">0°</output></span><input id="rotationYInput" type="range" min="-180" max="180" step="1" value="0" /></label>
+      <label class="range-field"><span><b>Поворот Z</b><output id="rotationZValue">0°</output></span><input id="rotationZInput" type="range" min="-180" max="180" step="1" value="0" /></label>
+      <div class="sheet-actions"><button class="outlined-button" id="resetRotationButton">Сбросить</button><button class="filled-button" id="autoOrientSheetButton">Автоориентация</button></div>
+    </div>
+    <div class="transform-panel" data-panel="scale">
+      <label class="range-field"><span><b>Равномерный масштаб</b><output id="scaleValue">100%</output></span><input id="scaleInput" type="range" min="5" max="400" step="1" value="100" /></label>
+      <label class="select-field"><span>Единица исходной модели</span><select id="modelUnitSelect"><option value="auto">Авто</option><option value="mm">Миллиметры</option><option value="cm">Сантиметры</option><option value="m">Метры</option><option value="in">Дюймы</option></select></label>
+      <div class="dimension-card"><small>Итоговый размер</small><strong id="transformedDimensions">—</strong></div>
+      <div class="sheet-actions"><button class="outlined-button" id="fitBedButton">Вместить на стол</button><button class="filled-button" id="resetScaleButton">100%</button></div>
+    </div>
+  </section>
+
+  <section class="bottom-sheet tall-sheet" id="settingsSheet" hidden role="dialog" aria-modal="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div><small>FDM-профиль</small><h2>Параметры печати</h2></div><button class="icon-button" data-close-sheet><svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg></button></div>
+    <div class="settings-stack">
+      <section class="settings-section">
+        <div class="settings-section-title"><div><small>Оборудование</small><strong>Принтер</strong></div></div>
+        <label class="select-field"><span>Профиль</span><select id="printerSelect"></select></label>
+        <div class="profile-summary" id="printerProfileSummary"><strong>220 × 220 × 220 мм</strong><span>Flashforge Adventurer 5M</span></div>
+      </section>
+
+      <section class="settings-section">
+        <div class="settings-section-title"><div><small>Основа</small><strong>Качество и материал</strong></div></div>
+        <label class="select-field"><span>Качество</span><select id="qualitySelect"><option value="draft">Черновик · 0,28 мм</option><option value="standard" selected>Стандарт · 0,20 мм</option><option value="fine">Точно · 0,12 мм</option><option value="custom">Свой</option></select></label>
+        <label class="select-field"><span>Материал</span><select id="filamentSelect"><option value="pla">PLA</option><option value="petg">PETG</option><option value="abs">ABS / ASA</option><option value="tpu">TPU</option></select></label>
+        <div class="settings-grid two-cols">
+          <label class="number-field"><span>Сопло</span><select id="nozzleSelect"></select></label>
+          <label class="number-field"><span>Слой, мм</span><input id="layerHeightInput" type="number" min="0.05" max="0.6" step="0.01" value="0.20" /></label>
+          <label class="number-field"><span>Стенки</span><input id="wallsInput" type="number" min="1" max="8" step="1" value="3" /></label>
+          <label class="number-field"><span>Заполнение, %</span><input id="infillInput" type="number" min="0" max="100" step="1" value="15" /></label>
+          <label class="number-field"><span>Верх / низ</span><input id="solidLayersInput" type="number" min="0" max="12" step="1" value="4" /></label>
+          <label class="number-field"><span>Рисунок</span><select id="infillPatternSelect"><option value="lines">Линии</option><option value="grid" selected>Сетка</option></select></label>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <div class="settings-section-title"><div><small>Движение</small><strong>Скорость и температура</strong></div></div>
+        <div class="settings-grid two-cols">
+          <label class="number-field"><span>Печать, мм/с</span><input id="speedInput" type="number" min="10" max="600" step="1" value="180" /></label>
+          <label class="number-field"><span>Перемещения, мм/с</span><input id="travelSpeedInput" type="number" min="20" max="600" step="1" value="300" /></label>
+          <label class="number-field"><span>Ускорение, мм/с²</span><input id="accelerationInput" type="number" min="200" max="20000" step="100" value="10000" /></label>
+          <label class="number-field"><span>Сопло, °C</span><input id="temperatureInput" type="number" min="150" max="280" step="1" value="220" /></label>
+          <label class="number-field"><span>Стол, °C</span><input id="bedTemperatureInput" type="number" min="0" max="100" step="1" value="55" /></label>
+        </div>
+      </section>
+
+      <section class="settings-section support-section">
+        <div class="settings-section-title"><div><small>Нависания</small><strong>Поддержки</strong></div><span id="supportSummary">Выключены</span></div>
+        <label class="select-field"><span>Тип</span><select id="supportTypeSelect"><option value="none" selected>Без поддержек</option><option value="normal">Обычные</option><option value="tree">Древовидные · экспериментально</option></select></label>
+        <div class="support-options" id="supportOptions" hidden>
+          <label class="select-field"><span>Размещение</span><select id="supportPlacementSelect"><option value="buildPlate" selected>Только от стола</option><option value="everywhere">Везде</option></select></label>
+          <label class="select-field"><span>Рисунок</span><select id="supportPatternSelect"><option value="zigzag" selected>Зигзаг</option><option value="lines">Линии</option><option value="grid">Сетка</option></select></label>
+          <label class="range-field"><span><b>Плотность</b><output id="supportDensityValue">15%</output></span><input id="supportDensityInput" type="range" min="5" max="80" step="1" value="15" /></label>
+          <label class="range-field"><span><b>Угол нависания</b><output id="supportAngleValue">50°</output></span><input id="supportAngleInput" type="range" min="35" max="75" step="1" value="50" /></label>
+          <div class="settings-grid two-cols">
+            <label class="number-field"><span>Интерфейс, слоёв</span><input id="supportInterfaceLayersInput" type="number" min="0" max="8" step="1" value="2" /></label>
+            <label class="number-field"><span>Зазор Z, мм</span><input id="supportZDistanceInput" type="number" min="0" max="1.2" step="0.05" value="0.20" /></label>
+            <label class="number-field"><span>Зазор XY, мм</span><input id="supportXYDistanceInput" type="number" min="0" max="2" step="0.05" value="0.35" /></label>
+          </div>
+          <p class="inline-note">Древовидный режим облегчает области поддержки, но остаётся экспериментальным. Проверь предпросмотр слоёв перед печатью.</p>
+        </div>
+      </section>
+
+      <section class="settings-section">
+        <div class="settings-section-title"><div><small>Адгезия</small><strong>Первый слой</strong></div></div>
+        <label class="switch-row"><span><b>Brim</b><small>Дополнительный контур вокруг модели</small></span><input id="brimInput" type="checkbox" checked /><i></i></label>
+        <label class="number-field full"><span>Ширина brim, мм</span><input id="brimWidthInput" type="number" min="0" max="20" step="0.5" value="5" /></label>
+      </section>
+    </div>
+  </section>
+
+  <section class="bottom-sheet result-sheet" id="sliceResultSheet" hidden role="dialog" aria-modal="true">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header"><div><small>Нарезка завершена</small><h2>Готово к печати</h2></div><button class="icon-button" data-close-sheet><svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6l5.6-5.6L5 6.4 6.4 5Z"/></svg></button></div>
+    <div class="result-hero"><div><small>Время печати</small><strong id="resultTime">—</strong></div><div><small>Пластик</small><strong id="resultMaterial">—</strong></div></div>
+    <div class="info-list compact-list"><div><span>Слоёв</span><strong id="resultLayers">—</strong></div><div><span>Длина филамента</span><strong id="resultFilamentLength">—</strong></div><div><span>Размер G-code</span><strong id="resultGcodeSize">—</strong></div><div><span>Предупреждения</span><strong id="resultWarnings">—</strong></div></div>
+    <p class="sheet-note warning-note">Перед реальной печатью проверь стартовый и конечный G-code под свой принтер. Мобильный слайсер пока не заменяет все расширенные алгоритмы OrcaSlicer.</p>
+    <div class="sheet-actions vertical-actions"><button class="filled-button" id="exportGcodeButton"><svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2ZM19 9h-4V3H9v6H5l7 7 7-7Z"/></svg>Сохранить G-code</button><button class="outlined-button" id="returnToModelButton">Вернуться к модели</button></div>
+  </section>
+
+  <div class="snackbar" id="snackbar" hidden></div>
+  <script src="./app.js"></script>
+</body>
+</html>

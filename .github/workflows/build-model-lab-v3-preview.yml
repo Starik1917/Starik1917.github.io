@@ -1,0 +1,116 @@
+name: Build Model Lab 3D v3 preview
+
+on:
+  push:
+    branches:
+      - build/model-lab-v3-preview
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.head_ref != 'build/model-lab-v4-orca'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build-src
+          cp -a model-lab-v3/source build-src
+          sed -i 's/    if (onHome) {/  if (onHome) {/g' model-lab-v3/patch_v3_preview.py
+          if ! python3 model-lab-v3/patch_v3_preview.py build-src >/tmp/model-lab-patch.log 2>&1; then
+            cat /tmp/model-lab-patch.log
+            exit 1
+          fi
+          cat /tmp/model-lab-patch.log
+          node --check build-src/web/src/main.js
+          grep -q "LineSegments2" build-src/web/src/main.js
+          grep -q "layerBottomSlider" build-src/web/index.html
+          grep -q "versionName '3.0.0-preview1'" build-src/app/build.gradle
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install web dependencies
+        working-directory: build-src
+        run: npm install --no-audit --no-fund
+
+      - name: Bundle offline application
+        working-directory: build-src
+        run: npm run build:web
+
+      - name: Verify bundled preview
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s build-src/app/src/main/assets/index.html
+          grep -q "Предпросмотр G-code" build-src/app/src/main/assets/index.html
+          grep -q "previewColorMode" build-src/app/src/main/assets/index.html
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Build installable APK
+        working-directory: build-src
+        run: gradle :app:assembleDebug --stacktrace
+
+      - name: Verify APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build-src/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -t "$APK"
+          unzip -l "$APK" | grep -q "assets/index.html"
+          cp "$APK" ModelLab3D-v3.0-preview1.apk
+          sha256sum ModelLab3D-v3.0-preview1.apk
+
+      - name: Package source
+        shell: bash
+        run: |
+          rm -rf build-src/node_modules build-src/app/build
+          cd build-src
+          zip -qr ../ModelLab3D-v3.0-preview1-source.zip .
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v3.0-preview1-APK
+          path: ModelLab3D-v3.0-preview1.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload source
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v3.0-preview1-source
+          path: ModelLab3D-v3.0-preview1-source.zip
+          if-no-files-found: error
+          retention-days: 7

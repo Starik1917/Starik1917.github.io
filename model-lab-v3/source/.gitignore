@@ -1,0 +1,7 @@
+.gradle/
+build/
+app/build/
+node_modules/
+app/src/main/assets/
+*.jks
+*.keystore
