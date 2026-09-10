@@ -2,7 +2,8 @@ name: Build CursorChat compact APK
 
 on:
   push:
-    branches: [ cursorchat-apk-build ]
+    branches:
+      - 'cursorchat-apk-build*'
 
 jobs:
   build:
