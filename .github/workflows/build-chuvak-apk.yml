@@ -21,6 +21,7 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
 
           p = Path('app/src/main/java/ru/starik/chuvakide/MiniInterpreter.java')
           s = p.read_text()
@@ -44,28 +45,33 @@ jobs:
           s = s.replace('"длина() работает со строками и списками"', '"чувааак() работает со строками и списками"')
           required = ['startsWith("чуувак ")', 'startsWith("чууувак ")', 'startsWith("чувак(")', 'matchWord("чувакчувак")', 'matchWord("чууваак")', 'matchWord("чувауак")', 'matchWord("чуууувак")', 'matchWord("чуваааак")', 'name.equals("чувааак")']
           for x in required:
-              assert x in s, x
+              if x not in s:
+                  raise RuntimeError('missing interpreter token: ' + x)
           p.write_text(s)
 
           p = Path('app/src/main/java/ru/starik/chuvakide/MainActivity.java')
           s = p.read_text()
           s = s.replace('getSharedPreferences("chuvak_ide", MODE_PRIVATE)', 'getSharedPreferences("chuvak_ide_v2", MODE_PRIVATE)')
-          old = '''    private static final String HELLO = "# первый чувак-код\\nпечать(\\"привет, мир!\\")\\nпечать(\\"чувак жив\\")";\n    private static final String LOOP = "x = 1\\nпока x <= 5:\\n    печать(\\"чувак №\\" + x)\\n    x = x + 1\\nпечать(\\"готово\\")";\n    private static final String IF_EXAMPLE = "очки = 1917\\nесли очки >= 1000:\\n    печать(\\"легендарный чувак\\")\\nиначе:\\n    печать(\\"надо ещё чуваков\\")";\n    private static final String LIST_EXAMPLE = "числа = [1, 2, 3, 4]\\nпечать(числа)\\nпечать(\\"длина: \\" + длина(числа))";'''
-          new = '''    private static final String HELLO = "# chuvak-code v0.2\\nчувак(\\"hello, chuvak!\\")\\nчувак(1917)";\n    private static final String LOOP = "x = 1\\nчууувак x <= 5:\\n    чувак(\\"chuvak #\\" + x)\\n    x = x + 1\\nчувак(\\"done\\")";\n    private static final String IF_EXAMPLE = "score = 1917\\nчуувак score >= 1000:\\n    чувак(\\"mega chuvak\\")\\nчуваак:\\n    чувак(\\"more chuvak needed\\")";\n    private static final String LIST_EXAMPLE = "items = [1, 2, 3, 4]\\nчувак(items)\\nчувак(чувааак(items))";'''
-          assert old in s
-          s = s.replace(old, new)
+
+          constants = '''    private static final String HELLO = "# chuvak-code v0.2\\nчувак(\\"hello, chuvak!\\")\\nчувак(1917)";\n    private static final String LOOP = "x = 1\\nчууувак x <= 5:\\n    чувак(\\"chuvak #\\" + x)\\n    x = x + 1\\nчувак(\\"done\\")";\n    private static final String IF_EXAMPLE = "score = 1917\\nчуувак score >= 1000:\\n    чувак(\\"mega chuvak\\")\\nчуваак:\\n    чувак(\\"more chuvak needed\\")";\n    private static final String LIST_EXAMPLE = "items = [1, 2, 3, 4]\\nчувак(items)\\nчувак(чувааак(items))";'''
+          pattern = r'(?m)^    private static final String HELLO = .*?$\n^    private static final String LOOP = .*?$\n^    private static final String IF_EXAMPLE = .*?$\n^    private static final String LIST_EXAMPLE = .*?$'
+          s, n = re.subn(pattern, lambda m: constants, s, count=1)
+          if n != 1:
+              raise RuntimeError('example constants not replaced')
+
           s = s.replace('TextView badge = text("PYTHON, НО ХУЖЕ", 10, MUTED, true);', 'TextView badge = text("CHUVAK LANG v0.2", 10, MUTED, true);')
-          old_buttons = '''        addButton(tools, "▶ Запуск", ACCENT, v -> runCode());\n        addButton(tools, "→ Чувак", PANEL2, v -> encodeCode());\n        addButton(tools, "← Текст", PANEL2, v -> decodeCode());'''
-          new_buttons = '''        addButton(tools, "▶ Запуск", ACCENT, v -> runCode());\n        addButton(tools, "Синтаксис", PANEL2, v -> help());'''
-          assert old_buttons in s
-          s = s.replace(old_buttons, new_buttons)
+          button_pattern = r'(?m)^        addButton\(tools, "▶ Запуск".*?$\n^        addButton\(tools, "→ Чувак".*?$\n^        addButton\(tools, "← Текст".*?$'
+          s, n = re.subn(button_pattern, '        addButton(tools, "▶ Запуск", ACCENT, v -> runCode());\n        addButton(tools, "Синтаксис", PANEL2, v -> help());', s, count=1)
+          if n != 1:
+              raise RuntimeError('toolbar not replaced')
           s = s.replace('Пример загружен. Его можно кодировать кнопкой «→ Чувак» и запускать в обоих видах.', 'Пример загружен. Здесь команды уже написаны на чистом чувакском.')
+
           start = s.index('    private void help() {')
           end = s.index('    private void updateFileLabel()', start)
           help_method = '''    private void help() {\n        String msg = "ЧУВАК-КОД v0.2\\n\\n" +\n            "Это отдельный Python-подобный язык. Русских ключевых слов в исходнике больше нет.\\n\\n" +\n            "СИНТАКСИС\\n" +\n            "чувак(x)              print\\n" +\n            "чуувак условие:       if\\n" +\n            "чуваак:               else\\n" +\n            "чууувак условие:      while\\n" +\n            "чувааак(x)            length\\n" +\n            "чуууувак              true\\n" +\n            "чуваааак              false\\n" +\n            "чувакчувак            and\\n" +\n            "чууваак               or\\n" +\n            "чувауак               not\\n\\n" +\n            "Переменные можно называть латиницей. Есть числа, строки, списки, + - * / %, == != < <= > >=. Блоки задаются отступами как в Python.\\n\\n" +\n            "Пример:\\n" +\n            "x = 1\\n" +\n            "чууувак x <= 3:\\n" +\n            "    чувак(x)\\n" +\n            "    x = x + 1\\n\\n" +\n            "Выполнение полностью локальное. Доступа к shell, сети и системным файлам у языка нет; цикл принудительно обрывается после 10 000 итераций.";\n        TextView body = text(msg, 14, Color.BLACK, false);\n        body.setTypeface(Typeface.MONOSPACE);\n        body.setPadding(dp(20), dp(8), dp(20), dp(8));\n        body.setTextIsSelectable(true);\n        ScrollView scroll = new ScrollView(this);\n        scroll.addView(body);\n        new AlertDialog.Builder(this).setTitle("Синтаксис чувак-кода").setView(scroll).setPositiveButton("чувак", null).show();\n    }\n\n'''
           s = s[:start] + help_method + s[end:]
-          assert 'чувак("hello, chuvak!")' in s
-          assert 'addButton(tools, "Синтаксис"' in s
+          if 'чувак(\\"hello, chuvak!\\")' not in s or 'addButton(tools, "Синтаксис"' not in s:
+              raise RuntimeError('UI patch verification failed')
           p.write_text(s)
 
           p = Path('app/build.gradle')
