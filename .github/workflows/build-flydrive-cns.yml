@@ -1,0 +1,72 @@
+name: Build FlyDrive CNS APK
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'flydrive/**'
+      - '.github/workflows/build-flydrive-cns.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Cache MaleCNS source data
+        uses: actions/cache@v4
+        with:
+          path: flydrive/.cache/malecns
+          key: malecns-v1-flat-connectome-minconf-05
+
+      - name: Install graph builder dependencies
+        run: python -m pip install --upgrade pip pyarrow pandas numpy
+
+      - name: Build sparse MaleCNS asset from official bulk data
+        working-directory: flydrive
+        run: python tools/build_malecns.py --cache .cache/malecns --assets app/src/main/assets
+
+      - name: Build debug APK
+        working-directory: flydrive
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Verify MaleCNS provenance assets
+        working-directory: flydrive
+        run: |
+          test -f app/build/outputs/apk/debug/app-debug.apk
+          unzip -l app/build/outputs/apk/debug/app-debug.apk | grep -E 'malecns_(graph.bin|meta.json|groups.json)'
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlyDriveCNS-debug-apk
+          path: flydrive/app/build/outputs/apk/debug/app-debug.apk
+          compression-level: 0
+          retention-days: 30
