@@ -1,0 +1,59 @@
+name: Import Echo Time site
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/import-echo-time.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - name: Import only the requested museum site
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import hashlib, io, pathlib, urllib.request, zipfile
+          url = "https://d2ol7oe51mr4n9.cloudfront.net/user_3LgApBbNIyx7VpJ2RJD4YSgeahN/eec3bc78-b2aa-4f06-adda-b64040454020.zip"
+          expected = "25cba3db39ef92f287971de97bd5b492faf73619330d6a6d4f05285f5183c828"
+          req = urllib.request.Request(url, headers={"User-Agent":"GitHub-Actions-EchoTime/1.0"})
+          with urllib.request.urlopen(req, timeout=40) as response:
+              archive = response.read(10_000_000)
+          actual = hashlib.sha256(archive).hexdigest()
+          if actual != expected:
+              raise SystemExit(f"Archive checksum mismatch, expected {expected} got {actual}")
+          with zipfile.ZipFile(io.BytesIO(archive)) as z:
+              bad = z.testzip()
+              if bad:
+                  raise SystemExit("ZIP error: " + bad)
+              content = z.read("Эхо времени/index.html")
+          text = content.decode("utf-8")
+          if "<html" not in text.lower() or "Эхо времени" not in text:
+              raise SystemExit("HTML failed content check")
+          dst = pathlib.Path("echo-time/index.html")
+          if dst.exists() and dst.read_bytes() != content:
+              raise SystemExit("Refusing to overwrite pre-existing echo-time/index.html")
+          dst.parent.mkdir(exist_ok=True)
+          dst.write_bytes(content)
+          print("Imported",dst,"bytes:",len(content),"SHA256:",hashlib.sha256(content).hexdigest())
+          PY
+      - name: Commit imported file only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- echo-time/index.html
+          if git diff --cached --quiet; then
+            echo "Site already in repository."
+          else
+            git commit -m "Publish Echo Time history app"
+            git push origin HEAD:main
+          fi
