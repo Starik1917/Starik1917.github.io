@@ -1,0 +1,402 @@
+name: Build Model Lab 3D with native OrcaSlicer
+
+on:
+  push:
+    branches:
+      - build/model-lab-v4-orca
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: model-lab-v4-orca-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  native-orca-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+
+    steps:
+      - name: Checkout Model Lab
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NDK and build tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sdkmanager "ndk;27.2.12479018" "cmake;3.31.1" "platforms;android-35" "build-tools;35.0.0"
+          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018" >> "$GITHUB_ENV"
+
+      - name: Fetch pinned OrcaSlicer source
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir orca
+          cd orca
+          git init
+          git remote add origin https://github.com/OrcaSlicer/OrcaSlicer.git
+          git sparse-checkout init --cone
+          git sparse-checkout set deps cmake deps_src src/libslic3r resources
+          git -c protocol.version=2 fetch --depth=1 --filter=blob:none origin e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46"
+          test -f LICENSE.txt
+          test -f "resources/profiles/Flashforge/machine/Flashforge Adventurer 5M 0.4 Nozzle.json"
+
+      - name: Restore Orca source download cache
+        uses: actions/cache@v4
+        with:
+          path: orca/deps/DL_CACHE
+          key: orca-dependency-downloads-e1c0ea0-v1
+
+      - name: Prepare Orca dependency graph for Android
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 model-lab-v4/patches/patch_orca_deps_android.py orca
+
+      - name: Restore compiled Android dependencies
+        id: deps_cache
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            build/orca-prefix
+            build/orca-deps
+          key: orca-android-arm64-ndk27-e1c0ea0-${{ hashFiles('model-lab-v4/patches/patch_orca_deps_android.py') }}
+
+      - name: Configure upstream dependencies for Android
+        id: configure_deps
+        if: steps.deps_cache.outputs.cache-hit != 'true'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" \
+            -S orca/deps \
+            -B build/orca-deps \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-26 \
+            -DANDROID_API_LEVEL=26 \
+            -DANDROID_STL=c++_static \
+            -DDESTDIR="$GITHUB_WORKSPACE/build/orca-prefix" \
+            > /tmp/orca-configure.log 2>&1
+          tail -n 120 /tmp/orca-configure.log
+
+      - name: List Android dependency targets
+        if: steps.deps_cache.outputs.cache-hit != 'true' && steps.configure_deps.outcome == 'success'
+        shell: bash
+        run: ninja -C build/orca-deps -t targets all > /tmp/orca-targets.txt
+
+      - name: Build foundational dependencies
+        id: dependency_build_1
+        if: steps.deps_cache.outputs.cache-hit != 'true' && steps.configure_deps.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > /tmp/orca-dependencies-stage1.log
+          for target in dep_ZLIB dep_EXPAT dep_Eigen dep_Cereal dep_TBB dep_Boost; do
+            if grep -q "^${target}:" /tmp/orca-targets.txt; then
+              echo "===== Building ${target} =====" | tee -a /tmp/orca-dependencies-stage1.log
+              "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-deps \
+                --target "$target" --parallel 2 \
+                >> /tmp/orca-dependencies-stage1.log 2>&1
+            else
+              echo "===== ${target} is provided or omitted =====" | tee -a /tmp/orca-dependencies-stage1.log
+            fi
+          done
+          tail -n 180 /tmp/orca-dependencies-stage1.log
+
+      - name: Build geometry and G-code dependencies
+        id: dependency_build_2
+        if: steps.deps_cache.outputs.cache-hit != 'true' && steps.dependency_build_1.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > /tmp/orca-dependencies-stage2.log
+          for target in dep_PNG dep_Qhull dep_GMP dep_MPFR dep_CGAL dep_NLopt dep_libnoise dep_OpenSSL dep_JPEG dep_Draco; do
+            if grep -q "^${target}:" /tmp/orca-targets.txt; then
+              echo "===== Building ${target} =====" | tee -a /tmp/orca-dependencies-stage2.log
+              "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-deps \
+                --target "$target" --parallel 2 \
+                >> /tmp/orca-dependencies-stage2.log 2>&1
+            else
+              echo "===== ${target} is provided or omitted =====" | tee -a /tmp/orca-dependencies-stage2.log
+            fi
+          done
+          tail -n 240 /tmp/orca-dependencies-stage2.log
+
+      - name: Save compiled Android dependencies
+        if: steps.deps_cache.outputs.cache-hit != 'true' && steps.dependency_build_2.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            build/orca-prefix
+            build/orca-deps
+          key: orca-android-arm64-ndk27-e1c0ea0-${{ hashFiles('model-lab-v4/patches/patch_orca_deps_android.py') }}
+
+      - name: Upload dependency diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-android-dependency-log
+          path: |
+            /tmp/orca-configure.log
+            /tmp/orca-dependencies-stage1.log
+            /tmp/orca-dependencies-stage2.log
+            /tmp/orca-targets.txt
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Stop on dependency failure
+        if: steps.deps_cache.outputs.cache-hit != 'true' && (steps.configure_deps.outcome == 'failure' || steps.dependency_build_1.outcome == 'failure' || steps.dependency_build_2.outcome == 'failure')
+        shell: bash
+        run: exit 1
+
+      - name: Patch pinned Orca sources for Android FDM core
+        if: steps.deps_cache.outputs.cache-hit == 'true' || steps.dependency_build_2.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 model-lab-v4/patches/patch_orca_core_android.py orca
+          grep -q "Arachne/WallToolPaths.cpp" orca/src/libslic3r/CMakeLists.txt
+          grep -q "Support/TreeSupport.cpp" orca/src/libslic3r/CMakeLists.txt
+          grep -q "GCode.cpp" orca/src/libslic3r/CMakeLists.txt
+          ! grep -q "find_package(OpenCV" orca/src/libslic3r/CMakeLists.txt
+          ! grep -q "find_package(OpenCASCADE" orca/src/libslic3r/CMakeLists.txt
+
+      - name: Configure native libslic3r bridge
+        id: configure_core
+        if: steps.deps_cache.outputs.cache-hit == 'true' || steps.dependency_build_2.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" \
+            -S model-lab-v4/native \
+            -B build/orca-native \
+            -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-26 \
+            -DANDROID_STL=c++_static \
+            -DORCA_SOURCE_DIR="$GITHUB_WORKSPACE/orca" \
+            -DORCA_DEP_PREFIX="$GITHUB_WORKSPACE/build/orca-prefix/usr/local" \
+            > /tmp/orca-core-configure.log 2>&1
+          tail -n 220 /tmp/orca-core-configure.log
+
+      - name: Build native libslic3r bridge
+        id: build_core
+        if: steps.configure_core.outcome == 'success'
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$ANDROID_SDK_ROOT/cmake/3.31.1/bin/cmake" --build build/orca-native \
+            --target model_lab_orca --parallel 2 \
+            > /tmp/orca-core-build.log 2>&1
+          tail -n 280 /tmp/orca-core-build.log
+
+      - name: Upload native core diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orca-android-core-log
+          path: |
+            /tmp/orca-core-configure.log
+            /tmp/orca-core-build.log
+          if-no-files-found: warn
+          retention-days: 3
+
+      - name: Stop on native core failure
+        if: steps.configure_core.outcome == 'failure' || steps.build_core.outcome == 'failure'
+        shell: bash
+        run: exit 1
+
+      - name: Verify native Orca library
+        if: steps.build_core.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          LIB="$(find build/orca-native -name 'libmodel_lab_orca.so' -type f -print -quit)"
+          test -n "$LIB"
+          file "$LIB" | tee /tmp/orca-native-file.txt
+          grep -qi 'aarch64\|ARM aarch64' /tmp/orca-native-file.txt
+          READELF="$(find "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt" -path '*/bin/llvm-readelf' -print -quit)"
+          "$READELF" -d "$LIB" | tee /tmp/orca-native-readelf.txt
+          cp "$LIB" libmodel_lab_orca-arm64-v8a.so
+          sha256sum libmodel_lab_orca-arm64-v8a.so | tee /tmp/orca-native-sha256.txt
+          echo "MODEL_LAB_ORCA_LIB=$GITHUB_WORKSPACE/libmodel_lab_orca-arm64-v8a.so" >> "$GITHUB_ENV"
+
+      - name: Upload native Orca library
+        if: steps.build_core.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-lab-orca-native-arm64
+          path: |
+            libmodel_lab_orca-arm64-v8a.so
+            /tmp/orca-native-file.txt
+            /tmp/orca-native-readelf.txt
+            /tmp/orca-native-sha256.txt
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Set up Node.js
+        if: steps.build_core.outcome == 'success'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Prepare mobile application source
+        if: steps.build_core.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build-app
+          cp -a model-lab-v3/source build-app
+
+          sed -i 's/    if (onHome) {/  if (onHome) {/g' model-lab-v3/patch_v3_preview.py
+          python3 model-lab-v3/patch_v3_preview.py build-app
+
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('model-lab-v3/patch_v3_preview2.py')
+          text = path.read_text()
+          block = '''main = replace_once(
+              main,
+              "versionName '3.0.0-preview1'",
+              "versionName '3.0.0-preview2'",
+              "version name in generated source",
+          )
+
+          '''
+          if block not in text:
+              raise SystemExit('preview2 cleanup anchor not found')
+          path.write_text(text.replace(block, '', 1))
+          PY
+          python3 model-lab-v3/patch_v3_preview2.py build-app
+
+          cp model-lab-v4/web/orca-client.js build-app/web/src/orca-client.js
+          python3 model-lab-v4/patches/patch_web_orca.py build-app
+          python3 model-lab-v4/patches/patch_android_app.py build-app model-lab-v4 "$MODEL_LAB_ORCA_LIB"
+
+          node --check build-app/web/src/main.js
+          node --check build-app/web/src/orca-client.js
+          grep -q "ModelLabOrca.slice" build-app/web/src/main.js
+          ! grep -q "await sliceModel" build-app/web/src/main.js
+          grep -q "versionName '4.0.0-alpha1'" build-app/app/build.gradle
+
+      - name: Bundle official Orca profiles and license
+        if: steps.build_core.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          ASSETS="build-app/app/src/main/assets/orca"
+          mkdir -p "$ASSETS/resources/profiles" "$ASSETS/data"
+          cp -a orca/resources/profiles/Flashforge "$ASSETS/resources/profiles/"
+          cp orca/resources/profiles/Flashforge.json "$ASSETS/resources/profiles/Flashforge.json"
+          cp orca/LICENSE.txt "$ASSETS/ORCASLICER-AGPL-3.0.txt"
+          printf '%s\n' 'OrcaSlicer commit e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46' > "$ASSETS/UPSTREAM.txt"
+          printf '%s\n' 'Model Lab runtime data directory' > "$ASSETS/data/.keep"
+
+          test -f "$ASSETS/resources/profiles/Flashforge/machine/Flashforge Adventurer 5M 0.4 Nozzle.json"
+          test -f "$ASSETS/resources/profiles/Flashforge/process/0.20mm Standard @Flashforge AD5M 0.4 Nozzle.json"
+          test -f "$ASSETS/resources/profiles/Flashforge/filament/Flashforge Generic PLA.json"
+
+      - name: Install web dependencies and bundle UI
+        if: steps.build_core.outcome == 'success'
+        working-directory: build-app
+        run: |
+          npm install --no-audit --no-fund
+          npm run build:web
+
+      - name: Set up Gradle
+        if: steps.build_core.outcome == 'success'
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Build installable APK
+        id: build_apk
+        if: steps.build_core.outcome == 'success'
+        working-directory: build-app
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle :app:assembleDebug --stacktrace
+
+      - name: Verify APK contains Orca core and profiles
+        if: steps.build_apk.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="build-app/app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          unzip -t "$APK" > /tmp/apk-test.txt
+          unzip -l "$APK" > /tmp/apk-files.txt
+          grep -q 'lib/arm64-v8a/libmodel_lab_orca.so' /tmp/apk-files.txt
+          grep -q 'assets/index.html' /tmp/apk-files.txt
+          grep -q 'assets/orca/resources/profiles/Flashforge/machine/Flashforge Adventurer 5M 0.4 Nozzle.json' /tmp/apk-files.txt
+          grep -q 'assets/orca/ORCASLICER-AGPL-3.0.txt' /tmp/apk-files.txt
+          cp "$APK" ModelLab3D-v4.0-alpha1-Orca.apk
+          sha256sum ModelLab3D-v4.0-alpha1-Orca.apk | tee /tmp/model-lab-apk-sha256.txt
+
+      - name: Upload Model Lab Orca APK
+        if: steps.build_apk.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v4.0-alpha1-Orca-APK
+          path: |
+            ModelLab3D-v4.0-alpha1-Orca.apk
+            /tmp/model-lab-apk-sha256.txt
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Package corresponding source
+        if: steps.build_apk.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build-app/node_modules build-app/app/build
+          mkdir -p corresponding-source
+          cp -a build-app corresponding-source/ModelLab3D
+          cp -a model-lab-v4 corresponding-source/model-lab-v4-port
+          cp orca/LICENSE.txt corresponding-source/ORCASLICER-AGPL-3.0.txt
+          cp model-lab-v4/orcaslicer.lock corresponding-source/orcaslicer.lock
+          cat > corresponding-source/README.txt <<'EOF'
+          Model Lab 3D v4 uses OrcaSlicer/libslic3r pinned at:
+          e1c0ea0cc48a05bdf7e57bc4f3a0fe0b54370c46
+
+          The Android adaptation and application source are provided here under
+          AGPL-3.0. Fetch the pinned upstream source with the repository and
+          commit recorded in orcaslicer.lock, then apply the included patches.
+          EOF
+          zip -qr ModelLab3D-v4.0-alpha1-Orca-source.zip corresponding-source
+
+      - name: Upload corresponding source
+        if: steps.build_apk.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModelLab3D-v4.0-alpha1-Orca-source
+          path: ModelLab3D-v4.0-alpha1-Orca-source.zip
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,81 @@
+name: Extract Model Lab v2.2 source
+
+on:
+  push:
+    branches:
+      - build/model-lab-v3-preview
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    if: ${{ !contains(github.event.head_commit.message || '', '[source extracted]') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: build/model-lab-v3-preview
+
+      - name: Stop when source already exists
+        id: source_check
+        shell: bash
+        run: |
+          if [ -f model-lab-v3/source/web/src/main.js ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Reconstruct v2.2 source
+        if: steps.source_check.outputs.exists == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat \
+            model-lab-v2/payload/part00a.b64 \
+            model-lab-v2/payload/part00b.b64 \
+            model-lab-v2/payload/part01.b64 \
+            model-lab-v2/payload/part02a.b64 \
+            model-lab-v2/payload/part02b.b64 \
+            model-lab-v2/payload/part03.b64 \
+            model-lab-v2/payload/part04.b64 \
+            model-lab-v2/payload/part05.b64 \
+            model-lab-v2/payload/part06.b64 \
+            model-lab-v2/payload/part07.b64 \
+            model-lab-v2/payload/part08.b64 \
+            | base64 --decode > /tmp/model-lab-v2.zip
+          echo "1be51639093fee26dfb24a32a76f7faf2520ec161593f3ea5f1e597342e0688b  /tmp/model-lab-v2.zip" | sha256sum --check
+          mkdir -p /tmp/build-src
+          unzip -q /tmp/model-lab-v2.zip -d /tmp/build-src
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          workflow = Path('.github/workflows/build-model-lab-v2.yml').read_text()
+          match = re.search(r"printf '%s' '([A-Za-z0-9+/=]+)'", workflow)
+          if not match:
+              raise SystemExit('Embedded v2.1 patch was not found')
+          Path('/tmp/model-lab-v2.1.patch.gz.b64').write_text(match.group(1))
+          PY
+          base64 --decode /tmp/model-lab-v2.1.patch.gz.b64 | gzip -d > /tmp/model-lab-v2.1.patch
+          patch -d /tmp/build-src -p1 < /tmp/model-lab-v2.1.patch
+          base64 --decode model-lab-v2/v2.2.patch.gz.b64 | gzip -d > /tmp/model-lab-v2.2.patch
+          patch -d /tmp/build-src -p1 < /tmp/model-lab-v2.2.patch
+          node --check /tmp/build-src/web/src/main.js
+          rm -rf model-lab-v3/source
+          mkdir -p model-lab-v3/source
+          cp -a /tmp/build-src/. model-lab-v3/source/
+          rm -rf model-lab-v3/source/node_modules model-lab-v3/source/app/build model-lab-v3/source/web/dist
+
+      - name: Commit extracted source
+        if: steps.source_check.outputs.exists == 'false'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add model-lab-v3/source
+          git commit -m "Extract Model Lab v2.2 source [source extracted]"
+          git push origin HEAD:build/model-lab-v3-preview
